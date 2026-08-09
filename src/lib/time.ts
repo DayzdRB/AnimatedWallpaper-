@@ -2,14 +2,22 @@ export const PARIS_TIME_ZONE = 'Europe/Paris'
 
 export type TimeOfDay = 'dawn' | 'day' | 'golden' | 'evening' | 'night'
 
-const parisHourFormatter = new Intl.DateTimeFormat('en-US', {
+const parisTimePartsFormatter = new Intl.DateTimeFormat('en-US', {
   timeZone: PARIS_TIME_ZONE,
   hour: '2-digit',
+  minute: '2-digit',
   hourCycle: 'h23',
 })
 
+export function getParisTimeParts(date: Date): { hour: number; minute: number } {
+  const parts = parisTimePartsFormatter.formatToParts(date)
+  const hour = Number(parts.find((part) => part.type === 'hour')?.value ?? 0)
+  const minute = Number(parts.find((part) => part.type === 'minute')?.value ?? 0)
+  return { hour, minute }
+}
+
 export function getParisHour(date: Date): number {
-  return Number(parisHourFormatter.format(date))
+  return getParisTimeParts(date).hour
 }
 
 export function getTimeOfDay(hour: number): TimeOfDay {

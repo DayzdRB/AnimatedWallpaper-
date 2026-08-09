@@ -60,6 +60,19 @@ export function getSceneHour(date: Date, settings: WallpaperSettings, parisHour:
   return parisHour
 }
 
+export function getSceneTime(
+  date: Date,
+  settings: WallpaperSettings,
+  parisTime: { hour: number; minute: number },
+): number {
+  if (settings.timeMode === 'local') return date.getHours() + date.getMinutes() / 60
+  if (settings.timeMode === 'custom') {
+    const [hour, minute] = settings.customTime.split(':').map(Number)
+    if (Number.isFinite(hour) && Number.isFinite(minute)) return hour + minute / 60
+  }
+  return parisTime.hour + parisTime.minute / 60
+}
+
 export function resolveSeason(date: Date, seasonMode: SeasonMode): ResolvedSeason {
   if (seasonMode !== 'auto') return seasonMode
   const month = date.getMonth() + 1

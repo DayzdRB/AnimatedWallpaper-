@@ -34,6 +34,14 @@ const seasonalParticles = Array.from({ length: 16 }, (_, index) => ({
   drift: -75 + (index % 9) * 18,
 }))
 
+const rainClouds = Array.from({ length: 7 }, (_, index) => ({
+  id: index,
+  left: -14 + index * 22,
+  top: 3 + (index % 3) * 6,
+  scale: 0.74 + (index % 4) * 0.16,
+  delay: -(index * 8.7),
+}))
+
 export function AtmosphereEffects({
   weather,
   season,
@@ -63,6 +71,22 @@ export function AtmosphereEffects({
       className={`atmosphere atmosphere--${weather}${ambientMotion ? '' : ' atmosphere--still'}`}
       aria-hidden="true"
     >
+      {showRain && (
+        <div className="weather-cloud-bank">
+          {rainClouds.map((cloud) => (
+            <i
+              key={cloud.id}
+              style={{
+                '--cloud-left': `${cloud.left}%`,
+                '--cloud-top': `${cloud.top}%`,
+                '--cloud-scale': cloud.scale,
+                '--cloud-delay': `${cloud.delay}s`,
+              } as EffectStyle}
+            />
+          ))}
+        </div>
+      )}
+
       {showRain && (
         <div className="weather-layer weather-layer--rain">
           {rainDrops.map((drop) => (
@@ -118,4 +142,3 @@ export function AtmosphereEffects({
     </div>
   )
 }
-

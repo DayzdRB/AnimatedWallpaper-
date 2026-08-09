@@ -5,6 +5,316 @@
   text-rendering: optimizeLegibility;
 }
 
+/* v0.3 — continuous celestial light, seasonal surfaces, and modeled air traffic */
+
+.scene .scene__artwork--day {
+  filter: brightness(var(--scene-brightness)) saturate(var(--scene-saturation)) contrast(0.97);
+}
+
+.scene .scene__artwork--night {
+  opacity: var(--night-opacity);
+}
+
+.scene__dynamic-light {
+  background:
+    linear-gradient(112deg, rgb(var(--dynamic-light-color) / calc(var(--dynamic-light-opacity) * 0.68)), transparent 58%),
+    radial-gradient(circle at 48% 28%, rgb(var(--dynamic-light-color) / var(--dynamic-light-opacity)), transparent 52%);
+  inset: 0;
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+  position: absolute;
+  transition: background 1.2s linear;
+  z-index: 1;
+}
+
+.scene .scene__stars {
+  opacity: var(--star-opacity);
+  transition: opacity 1.2s linear;
+}
+
+.celestial-cycle {
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+
+.celestial {
+  left: var(--celestial-x);
+  opacity: 0;
+  position: absolute;
+  top: var(--celestial-y);
+  transform: translate(-50%, -50%) scale(0.72);
+  transition: left 1.2s linear, opacity 1.2s ease, top 1.2s linear, transform 1.2s ease;
+}
+
+.celestial--visible {
+  opacity: var(--weather-visibility);
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.celestial--sun > span {
+  background: radial-gradient(circle at 34% 31%, #fffce7 0 12%, #ffe69b 42%, #f8aa4e 100%);
+  border-radius: 50%;
+  box-shadow:
+    0 0 18px rgba(255, 240, 184, 0.88),
+    0 0 58px rgba(255, 188, 91, 0.55),
+    0 0 130px rgba(255, 155, 75, 0.27);
+  display: block;
+  height: clamp(2.7rem, 4.8vw, 5.3rem);
+  width: clamp(2.7rem, 4.8vw, 5.3rem);
+}
+
+.celestial--moon > span {
+  background: radial-gradient(circle at 34% 30%, #fffdf1, #e8e8df 58%, #aeb8bf 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 22px rgba(226, 239, 255, 0.68), 0 0 70px rgba(169, 198, 231, 0.3);
+  display: block;
+  height: clamp(2.2rem, 3.5vw, 4rem);
+  overflow: hidden;
+  position: relative;
+  width: clamp(2.2rem, 3.5vw, 4rem);
+}
+
+.celestial--moon i {
+  background: rgba(121, 135, 145, 0.17);
+  border-radius: 50%;
+  height: 21%;
+  left: 20%;
+  position: absolute;
+  top: 28%;
+  width: 21%;
+}
+
+.celestial--moon i:nth-child(2) { height: 14%; left: 59%; top: 19%; width: 14%; }
+.celestial--moon i:nth-child(3) { height: 27%; left: 48%; top: 57%; width: 27%; }
+
+.season-surface {
+  height: 100%;
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  width: 100%;
+  z-index: 2;
+}
+
+.season-surface__ground {
+  fill: url(#snow-sheen);
+  opacity: 0.19;
+}
+
+.season-surface__roofs {
+  fill: url(#snow-sheen);
+  opacity: 0.72;
+}
+
+.season-surface__trees {
+  fill: #eef7fb;
+  opacity: 0.42;
+}
+
+.season-surface__autumn {
+  fill: url(#autumn-canopy);
+  mix-blend-mode: color;
+  opacity: 0.72;
+}
+
+.weather-cloud-bank {
+  height: 37%;
+  inset: 0 0 auto;
+  overflow: hidden;
+  position: absolute;
+}
+
+.weather-cloud-bank i {
+  animation: rain-cloud-drift 54s linear var(--cloud-delay) infinite alternate;
+  background: rgba(63, 75, 91, 0.74);
+  border-radius: 999px;
+  filter: blur(1px);
+  height: 5.2rem;
+  left: var(--cloud-left);
+  opacity: 0.58;
+  position: absolute;
+  top: var(--cloud-top);
+  transform: scale(var(--cloud-scale));
+  width: 16rem;
+}
+
+.weather-cloud-bank i::before,
+.weather-cloud-bank i::after {
+  background: inherit;
+  border-radius: 50%;
+  content: "";
+  position: absolute;
+}
+
+.weather-cloud-bank i::before { height: 7.5rem; left: 2.4rem; top: -3rem; width: 8rem; }
+.weather-cloud-bank i::after { height: 6rem; right: 2.1rem; top: -2.1rem; width: 7rem; }
+
+.atmosphere--storm .weather-cloud-bank {
+  filter: brightness(0.62) saturate(0.74);
+  transform: scale(1.18);
+  transform-origin: top center;
+}
+
+.atmosphere--storm .weather-cloud-bank i { opacity: 0.82; }
+
+@keyframes rain-cloud-drift {
+  from { translate: -4vw 0; }
+  to { translate: 8vw 1.5vh; }
+}
+
+.aircraft {
+  animation: aircraft-flight-ltr var(--aircraft-duration) linear forwards;
+  filter: drop-shadow(0 3px 3px rgba(3, 8, 18, 0.34));
+  left: -18rem;
+  top: var(--aircraft-top);
+  width: var(--aircraft-width);
+  z-index: 2;
+}
+
+.aircraft__motion {
+  animation: aircraft-bob 7s ease-in-out infinite;
+  display: block;
+}
+
+.aircraft__shape {
+  display: block;
+  overflow: visible;
+  width: 100%;
+}
+
+.aircraft-fill { fill: var(--aircraft-body); }
+.aircraft-wing { fill: color-mix(in srgb, var(--aircraft-body) 78%, var(--aircraft-metal)); }
+.aircraft-engine { fill: var(--aircraft-metal); stroke: var(--aircraft-dark); stroke-width: 1.4; }
+.aircraft-stripe { fill: var(--aircraft-accent); opacity: 0.94; }
+.aircraft-tail-detail { fill: var(--aircraft-accent); }
+.aircraft-window-band { fill: var(--aircraft-dark); opacity: 0.88; }
+.aircraft-windows { fill: #263b50; }
+.aircraft-highlight { fill: none; opacity: 0.68; stroke: rgba(255,255,255,.78); stroke-linecap: round; stroke-width: 1.5; }
+.aircraft-strut, .aircraft-gear { fill: none; stroke: var(--aircraft-dark); stroke-linecap: round; stroke-width: 2; }
+.aircraft-wheel { fill: #18202a; stroke: #aab0b4; stroke-width: 1; }
+.aircraft-propeller { fill: var(--aircraft-dark); }
+.aircraft-propeller-blade { animation: propeller-flicker .12s linear infinite alternate; stroke: rgba(223,232,239,.62); stroke-width: 2.2; }
+
+.aircraft-rotor,
+.aircraft-tail-rotor {
+  fill: none;
+  stroke: rgba(211, 221, 228, 0.78);
+  stroke-linecap: round;
+  stroke-width: 2.2;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.aircraft-rotor { animation: rotor-spin .15s linear infinite; }
+.aircraft-tail-rotor { animation: rotor-spin .22s linear infinite; }
+
+.aircraft-light { filter: drop-shadow(0 0 3px currentColor); }
+.aircraft-light--beacon { animation: beacon-pulse 1.3s steps(1) infinite; color: #ff3838; fill: currentColor; }
+.aircraft-light--strobe { animation: strobe-double 1.65s steps(1) infinite; color: white; fill: currentColor; }
+.aircraft-light--nav-red { color: #ff3636; fill: currentColor; }
+.aircraft-light--nav-green { color: #55f08d; fill: currentColor; }
+.aircraft-light--landing { animation: landing-pulse 2.4s ease-in-out infinite; color: #fff7cc; fill: currentColor; }
+
+.aircraft__landing-beam {
+  background: linear-gradient(90deg, rgba(255,246,194,.26), transparent);
+  clip-path: polygon(0 42%, 100% 0, 100% 100%, 0 58%);
+  height: 3.5rem;
+  left: 81%;
+  opacity: .7;
+  position: absolute;
+  top: 29%;
+  width: 8rem;
+}
+
+.aircraft__contrail {
+  background: linear-gradient(90deg, transparent, rgba(228, 237, 245, 0.2));
+  filter: blur(1.5px);
+  height: 2px;
+  right: 83%;
+  top: 54%;
+  width: clamp(4rem, 9vw, 9rem);
+}
+
+.aircraft--ga .aircraft-light--nav-red,
+.aircraft--ga .aircraft-light--nav-green,
+.aircraft--helicopter .aircraft-light--nav-red,
+.aircraft--helicopter .aircraft-light--nav-green { opacity: .74; }
+
+@keyframes aircraft-flight-ltr {
+  0% { opacity: 0; transform: translate3d(0, 0, 0); }
+  7%, 93% { opacity: .88; }
+  100% { opacity: 0; transform: translate3d(calc(100vw + 36rem), -2vh, 0); }
+}
+
+@keyframes aircraft-bob { 0%,100% { transform: translateY(0) rotate(-.25deg); } 50% { transform: translateY(-5px) rotate(.2deg); } }
+@keyframes propeller-flicker { from { opacity: .22; transform: scaleY(.65); } to { opacity: .76; transform: scaleY(1.12); } }
+@keyframes rotor-spin { to { transform: rotate(180deg) scaleX(.12); } }
+@keyframes beacon-pulse { 0%, 9% { opacity: 1; } 10%, 100% { opacity: .08; } }
+@keyframes strobe-double { 0%, 5%, 12%, 17% { opacity: 1; } 6%, 11%, 18%, 100% { opacity: .05; } }
+@keyframes landing-pulse { 0%,100% { opacity: .72; } 50% { opacity: 1; } }
+
+.settings-panel {
+  backdrop-filter: blur(32px) saturate(105%);
+  background:
+    linear-gradient(150deg, rgba(22, 29, 38, 0.78), rgba(8, 14, 23, 0.72)),
+    radial-gradient(circle at 100% 0, rgba(194, 215, 224, 0.11), transparent 42%);
+  border-left-color: rgba(225, 238, 242, 0.24);
+  box-shadow: -22px 0 78px rgba(1, 5, 12, 0.34), inset 1px 0 rgba(255,255,255,.06);
+  color: #f5f4ef;
+  overflow: hidden;
+}
+
+.settings-panel__topline {
+  min-width: 0;
+  position: relative;
+  z-index: 5;
+}
+
+.settings-panel__topline > div { min-width: 0; }
+
+.settings-panel__close {
+  flex: 0 0 2.7rem;
+  height: 2.7rem;
+  margin-left: 1rem;
+  position: sticky;
+  right: 0;
+  top: 0;
+  width: 2.7rem;
+  z-index: 8;
+}
+
+.time-mode input:checked + .time-mode__copy,
+.atmosphere-option input:checked + span {
+  background: linear-gradient(145deg, rgba(198, 218, 224, 0.2), rgba(124, 150, 163, 0.1));
+  border-color: rgba(224, 237, 239, 0.58);
+}
+
+.setting-switch input:checked + i { background: rgba(157, 185, 194, 0.62); }
+
+.settings-panel h2 { font-size: clamp(3.75rem, 6vw, 5.8rem); }
+
+@media (max-width: 760px) {
+  .celestial--sun > span { height: 2.65rem; width: 2.65rem; }
+  .celestial--moon > span { height: 2.25rem; width: 2.25rem; }
+  .aircraft { width: calc(var(--aircraft-width) * .78); }
+  .season-surface { opacity: .82; }
+  .settings-panel { padding-top: max(1.25rem, env(safe-area-inset-top)); }
+  .settings-panel h2 { font-size: clamp(3.2rem, 17vw, 4.5rem); }
+}
+
+.wallpaper--still .weather-cloud-bank i,
+.wallpaper--still .aircraft__motion,
+.wallpaper--still .aircraft-rotor,
+.wallpaper--still .aircraft-tail-rotor { animation-play-state: paused; }
+
+@media (prefers-reduced-motion: reduce) {
+  .celestial { transition: none; }
+  .weather-cloud-bank i { animation: none; }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -1875,4 +2185,62 @@ button {
     font-size: 4.25rem;
     margin: 1.7rem 0 1.5rem;
   }
+}
+
+/* v0.3 cascade overrides */
+.scene .scene__artwork--day {
+  filter: brightness(var(--scene-brightness)) saturate(var(--scene-saturation)) contrast(0.97);
+}
+
+.scene .scene__artwork--night { opacity: var(--night-opacity); }
+
+.aircraft {
+  animation: aircraft-flight-ltr var(--aircraft-duration) linear forwards;
+  filter: drop-shadow(0 3px 3px rgba(3, 8, 18, 0.34));
+  left: -18rem;
+  right: auto;
+  top: var(--aircraft-top);
+  width: var(--aircraft-width);
+  z-index: 2;
+}
+
+.aircraft__shape { fill: initial; transform: none; }
+.aircraft__contrail { left: auto; right: 83%; }
+
+.settings-panel {
+  backdrop-filter: blur(32px) saturate(105%);
+  background:
+    linear-gradient(150deg, rgba(22, 29, 38, 0.78), rgba(8, 14, 23, 0.72)),
+    radial-gradient(circle at 100% 0, rgba(194, 215, 224, 0.11), transparent 42%);
+  border-left-color: rgba(225, 238, 242, 0.24);
+  box-shadow: -22px 0 78px rgba(1, 5, 12, 0.34), inset 1px 0 rgba(255,255,255,.06);
+  color: #f5f4ef;
+  overflow: hidden;
+}
+
+.settings-panel__topline { min-width: 0; position: relative; z-index: 5; }
+.settings-panel__topline > div { min-width: 0; }
+.settings-panel__close {
+  flex: 0 0 2.7rem;
+  height: 2.7rem;
+  margin-left: 1rem;
+  position: sticky;
+  right: 0;
+  top: 0;
+  width: 2.7rem;
+  z-index: 8;
+}
+
+.time-mode input:checked + .time-mode__copy,
+.atmosphere-option input:checked + span {
+  background: linear-gradient(145deg, rgba(198, 218, 224, 0.2), rgba(124, 150, 163, 0.1));
+  border-color: rgba(224, 237, 239, 0.58);
+}
+
+.setting-switch input:checked + i { background: rgba(157, 185, 194, 0.62); }
+
+@media (max-width: 760px) {
+  .aircraft { width: calc(var(--aircraft-width) * .78); }
+  .settings-panel { padding-top: max(1.25rem, env(safe-area-inset-top)); }
+  .settings-panel h2 { font-size: clamp(3.2rem, 17vw, 4.5rem); }
 }

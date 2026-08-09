@@ -4,7 +4,7 @@ An original, cinematic Paris wallpaper rendered entirely in the browser.
 
 ## Current milestone
 
-**v0.2.0 — Paris Atmosphere**
+**v0.3.0 — Paris Sky Traffic**
 
 - Full-viewport, time-aware Paris scene
 - Original illustrated Paris day and night artwork
@@ -20,9 +20,14 @@ An original, cinematic Paris wallpaper rendered entirely in the browser.
 - Independent Paris time, local time, date, and greeting controls
 - 12/24-hour clock and ambient-motion preferences
 - Greeting follows the displayed wallpaper time, including custom time
-- Optional aircraft flybys every few minutes
+- Left-to-right aircraft flybys with distinct airliner, business jet, general-aviation, and helicopter profiles
+- A220, A320, 737, CRJ700, Cessna 172, Piper Cub, DA40, Vision Jet, and private-jet variants
+- Fictional liveries, navigation lights, strobes, beacons, and nighttime landing lights
 - Local clear, rain, thunderstorm, and snow effects
-- Automatic or manual spring, summer, autumn, and winter treatments
+- Weather-responsive cloud scale, including a heavier storm ceiling
+- Continuous sun and moon movement with time-progressive scene color and brightness
+- Automatic or manual seasons, including autumn foliage and winter snow accumulation
+- Neutral translucent settings glass with a reliably visible close control
 
 No photography or external artwork is required.
 
@@ -56,9 +61,7 @@ The wallpaper renderer is being developed and polished on the web first. Desktop
 ## Planned features
 
 - Live Paris weather
-- Rain, snow, clouds, and lightning
-- Seasonal atmosphere
-- Sun and moon movement
+- Live weather-driven rain, snow, clouds, and lightning
 - Comets and rare sky events
 - Wallpaper packs
 - Desktop integration through Tauri

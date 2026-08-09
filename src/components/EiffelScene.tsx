@@ -1,8 +1,15 @@
+import { getSceneLighting } from '../lib/lighting'
+import type { ResolvedSeason } from '../lib/settings'
 import type { TimeOfDay } from '../lib/time'
+import { CelestialCycle } from './CelestialCycle'
+import { SeasonSurface } from './SeasonSurface'
 
 type EiffelSceneProps = {
   timeOfDay: TimeOfDay
   ambientMotion: boolean
+  sceneTime: number
+  season: ResolvedSeason
+  weather: 'clear' | 'rain' | 'storm' | 'snow'
 }
 
 const stars = Array.from({ length: 36 }, (_, index) => ({
@@ -13,16 +20,20 @@ const stars = Array.from({ length: 36 }, (_, index) => ({
   size: `${1 + (index % 3) * 0.55}px`,
 }))
 
-export function EiffelScene({ timeOfDay, ambientMotion }: EiffelSceneProps) {
+export function EiffelScene({ timeOfDay, ambientMotion, sceneTime, season, weather }: EiffelSceneProps) {
   return (
     <div
       className={`scene scene--${timeOfDay}${ambientMotion ? '' : ' scene--still'}`}
+      style={getSceneLighting(sceneTime)}
       aria-hidden="true"
     >
       <div className="scene__artwork scene__artwork--day" />
       <div className="scene__artwork scene__artwork--night" />
+      <div className="scene__dynamic-light" />
+      <CelestialCycle sceneTime={sceneTime} weather={weather} />
       <div className="scene__time-tint" />
       <div className="scene__season-tint" />
+      <SeasonSurface season={season} />
       <div className="scene__stars">
         {stars.map((star) => (
           <i

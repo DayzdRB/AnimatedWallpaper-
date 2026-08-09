@@ -9,13 +9,14 @@ import { RippleButton } from './components/ui/RippleButton'
 import { getFrenchGreeting } from './lib/greeting'
 import {
   DEFAULT_SETTINGS,
-  getSceneHour,
+  getSceneTime,
   loadSettings,
   resolveSeason,
   saveSettings,
   type WallpaperSettings,
 } from './lib/settings'
-import { getParisHour, getTimeOfDay } from './lib/time'
+import { getParisTimeParts, getTimeOfDay } from './lib/time'
+import { isSceneNight } from './lib/lighting'
 
 const VIEWER_NAME = 'Trevor'
 
@@ -43,8 +44,9 @@ function App() {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
   }, [])
 
-  const parisHour = useMemo(() => getParisHour(now), [now])
-  const sceneHour = getSceneHour(now, settings, parisHour)
+  const parisTime = useMemo(() => getParisTimeParts(now), [now])
+  const sceneTime = getSceneTime(now, settings, parisTime)
+  const sceneHour = Math.floor(sceneTime)
   const timeOfDay = getTimeOfDay(sceneHour)
   const greeting = getFrenchGreeting(sceneHour)
   const season = resolveSeason(now, settings.seasonMode)
@@ -71,20 +73,29 @@ function App() {
     <main
       className={`wallpaper wallpaper--${timeOfDay} wallpaper--season-${season}${settings.ambientMotion ? '' : ' wallpaper--still'}`}
     >
-      <EiffelScene timeOfDay={timeOfDay} ambientMotion={settings.ambientMotion} />
+      <EiffelScene
+        timeOfDay={timeOfDay}
+        ambientMotion={settings.ambientMotion}
+        sceneTime={sceneTime}
+        season={season}
+        weather={settings.weatherMode}
+      />
       <AtmosphereEffects
         weather={settings.weatherMode}
         season={season}
         ambientMotion={settings.ambientMotion}
       />
-      <AircraftFlyby enabled={settings.showAircraft && settings.ambientMotion} />
+      <AircraftFlyby
+        enabled={settings.showAircraft && settings.ambientMotion}
+        isNight={isSceneNight(sceneTime)}
+      />
 
       <header className="wallpaper__masthead">
         <div>
           <p className="eyebrow">Paris / France</p>
           <p className="edition">Animated study no. 01</p>
         </div>
-        <p className="version">v0.2.0</p>
+        <p className="version">v0.3.0</p>
       </header>
 
       {settings.showGreeting && (
