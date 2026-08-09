@@ -4,7 +4,7 @@ An original, cinematic Paris wallpaper rendered entirely in the browser.
 
 ## Current milestone
 
-**v0.1.0 — Paris Control Atelier**
+**v0.2.0 — Paris Atmosphere**
 
 - Full-viewport, time-aware Paris scene
 - Original illustrated Paris day and night artwork
@@ -19,6 +19,10 @@ An original, cinematic Paris wallpaper rendered entirely in the browser.
 - Paris, local, or custom time-based lighting
 - Independent Paris time, local time, date, and greeting controls
 - 12/24-hour clock and ambient-motion preferences
+- Greeting follows the displayed wallpaper time, including custom time
+- Optional aircraft flybys every few minutes
+- Local clear, rain, thunderstorm, and snow effects
+- Automatic or manual spring, summer, autumn, and winter treatments
 
 No photography or external artwork is required.
 

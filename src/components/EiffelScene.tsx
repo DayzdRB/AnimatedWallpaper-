@@ -22,6 +22,7 @@ export function EiffelScene({ timeOfDay, ambientMotion }: EiffelSceneProps) {
       <div className="scene__artwork scene__artwork--day" />
       <div className="scene__artwork scene__artwork--night" />
       <div className="scene__time-tint" />
+      <div className="scene__season-tint" />
       <div className="scene__stars">
         {stars.map((star) => (
           <i

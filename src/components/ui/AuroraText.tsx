@@ -12,7 +12,7 @@ type AuroraStyle = CSSProperties & {
   '--aurora-speed': string
 }
 
-const DEFAULT_COLORS = ['#FF0080', '#7928CA', '#0070F3', '#38bdf8']
+const DEFAULT_COLORS = ['#f4e4de', '#d7c5df', '#b9cfe2']
 
 export function AuroraText({
   children,
@@ -35,4 +35,3 @@ export function AuroraText({
     </span>
   )
 }
-

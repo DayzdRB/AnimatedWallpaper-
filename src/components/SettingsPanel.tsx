@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react'
-import type { SceneTimeMode, WallpaperSettings } from '../lib/settings'
+import type {
+  SceneTimeMode,
+  SeasonMode,
+  WallpaperSettings,
+  WeatherMode,
+} from '../lib/settings'
 import { RippleButton } from './ui/RippleButton'
 
 type SettingsPanelProps = {
@@ -14,6 +19,21 @@ const TIME_MODES: Array<{ value: SceneTimeMode; label: string; detail: string }>
   { value: 'paris', label: 'Paris', detail: 'Live French time' },
   { value: 'local', label: 'Local', detail: 'Your current time' },
   { value: 'custom', label: 'Set time', detail: 'Freeze the lighting' },
+]
+
+const WEATHER_MODES: Array<{ value: WeatherMode; label: string }> = [
+  { value: 'clear', label: 'Clear' },
+  { value: 'rain', label: 'Rain' },
+  { value: 'storm', label: 'Storm' },
+  { value: 'snow', label: 'Snow' },
+]
+
+const SEASON_MODES: Array<{ value: SeasonMode; label: string }> = [
+  { value: 'auto', label: 'Auto' },
+  { value: 'spring', label: 'Spring' },
+  { value: 'summer', label: 'Summer' },
+  { value: 'autumn', label: 'Autumn' },
+  { value: 'winter', label: 'Winter' },
 ]
 
 export function SettingsPanel({
@@ -145,7 +165,7 @@ export function SettingsPanel({
             />
             <SettingSwitch
               label="Greeting"
-              detail="Show Bonjour, Bonsoir, or Bonne nuit"
+              detail="Show Bonjour, Bonsoir, or Bonne Nuit"
               checked={settings.showGreeting}
               onChange={(checked) => patchSettings({ showGreeting: checked })}
             />
@@ -155,8 +175,49 @@ export function SettingsPanel({
             <div className="settings-group__heading">
               <span>03</span>
               <div>
+                <h3>Atmosphere</h3>
+                <p>Preview weather and seasonal art without a weather API.</p>
+              </div>
+            </div>
+            <p className="settings-field-label">Weather</p>
+            <div className="atmosphere-option-grid atmosphere-option-grid--weather" role="radiogroup" aria-label="Weather effect">
+              {WEATHER_MODES.map((mode) => (
+                <label className="atmosphere-option" key={mode.value}>
+                  <input
+                    type="radio"
+                    name="weather-mode"
+                    value={mode.value}
+                    checked={settings.weatherMode === mode.value}
+                    onChange={() => patchSettings({ weatherMode: mode.value })}
+                  />
+                  <span>{mode.label}</span>
+                </label>
+              ))}
+            </div>
+
+            <p className="settings-field-label">Season</p>
+            <div className="atmosphere-option-grid atmosphere-option-grid--season" role="radiogroup" aria-label="Season">
+              {SEASON_MODES.map((mode) => (
+                <label className="atmosphere-option" key={mode.value}>
+                  <input
+                    type="radio"
+                    name="season-mode"
+                    value={mode.value}
+                    checked={settings.seasonMode === mode.value}
+                    onChange={() => patchSettings({ seasonMode: mode.value })}
+                  />
+                  <span>{mode.label}</span>
+                </label>
+              ))}
+            </div>
+          </section>
+
+          <section className="settings-group">
+            <div className="settings-group__heading">
+              <span>04</span>
+              <div>
                 <h3>Experience</h3>
-                <p>Fine-tune time and animation behavior.</p>
+                <p>Fine-tune information and ambient animation.</p>
               </div>
             </div>
             <SettingSwitch
@@ -167,9 +228,15 @@ export function SettingsPanel({
             />
             <SettingSwitch
               label="Ambient motion"
-              detail="Cloud drift, haze, stars, and aurora text"
+              detail="Cloud drift, weather, particles, and aurora text"
               checked={settings.ambientMotion}
               onChange={(checked) => patchSettings({ ambientMotion: checked })}
+            />
+            <SettingSwitch
+              label="Aircraft flybys"
+              detail="A distant aircraft crosses the sky every few minutes"
+              checked={settings.showAircraft}
+              onChange={(checked) => patchSettings({ showAircraft: checked })}
             />
           </section>
         </div>

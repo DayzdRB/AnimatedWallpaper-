@@ -1,6 +1,5 @@
-export function getFrenchGreeting(parisHour: number): string {
-  if (parisHour >= 5 && parisHour < 18) return 'Bonjour'
-  if (parisHour >= 18 && parisHour < 23) return 'Bonsoir'
-  return 'Bonne nuit'
+export function getFrenchGreeting(displayHour: number): string {
+  if (displayHour >= 5 && displayHour < 17) return 'Bonjour'
+  if (displayHour >= 17 && displayHour < 23) return 'Bonsoir'
+  return 'Bonne Nuit'
 }
-

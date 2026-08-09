@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { EiffelScene } from './components/EiffelScene'
+import { AircraftFlyby } from './components/AircraftFlyby'
+import { AtmosphereEffects } from './components/AtmosphereEffects'
 import { ParisClock } from './components/ParisClock'
 import { SettingsPanel } from './components/SettingsPanel'
 import { AuroraText } from './components/ui/AuroraText'
@@ -9,6 +11,7 @@ import {
   DEFAULT_SETTINGS,
   getSceneHour,
   loadSettings,
+  resolveSeason,
   saveSettings,
   type WallpaperSettings,
 } from './lib/settings'
@@ -43,7 +46,8 @@ function App() {
   const parisHour = useMemo(() => getParisHour(now), [now])
   const sceneHour = getSceneHour(now, settings, parisHour)
   const timeOfDay = getTimeOfDay(sceneHour)
-  const greeting = getFrenchGreeting(parisHour)
+  const greeting = getFrenchGreeting(sceneHour)
+  const season = resolveSeason(now, settings.seasonMode)
   const fullscreenSupported = Boolean(document.documentElement.requestFullscreen)
 
   async function toggleFullscreen() {
@@ -64,33 +68,32 @@ function App() {
   }
 
   return (
-    <main className={`wallpaper wallpaper--${timeOfDay}${settings.ambientMotion ? '' : ' wallpaper--still'}`}>
+    <main
+      className={`wallpaper wallpaper--${timeOfDay} wallpaper--season-${season}${settings.ambientMotion ? '' : ' wallpaper--still'}`}
+    >
       <EiffelScene timeOfDay={timeOfDay} ambientMotion={settings.ambientMotion} />
+      <AtmosphereEffects
+        weather={settings.weatherMode}
+        season={season}
+        ambientMotion={settings.ambientMotion}
+      />
+      <AircraftFlyby enabled={settings.showAircraft && settings.ambientMotion} />
 
       <header className="wallpaper__masthead">
         <div>
           <p className="eyebrow">Paris / France</p>
           <p className="edition">Animated study no. 01</p>
         </div>
-        <div className="masthead-actions">
-          <p className="version">v0.1.0</p>
-          <RippleButton
-            className="settings-launcher"
-            onClick={() => setSettingsOpen(true)}
-            aria-expanded={settingsOpen}
-            aria-controls="settings-title"
-          >
-            <span aria-hidden="true">◇</span>
-            Settings
-          </RippleButton>
-        </div>
+        <p className="version">v0.2.0</p>
       </header>
 
       {settings.showGreeting && (
         <section className="wallpaper__greeting" aria-label={`${greeting}, ${VIEWER_NAME}`}>
           <p className="greeting__salutation">{greeting},</p>
           <h1 className="greeting__name">
-            <AuroraText speed={9}>{VIEWER_NAME}</AuroraText>
+            <AuroraText colors={['#f6e7df', '#ddcce2', '#bdd2e4']} speed={14}>
+              {VIEWER_NAME}
+            </AuroraText>
           </h1>
           <p className="greeting__caption">La ville lumière · 48°51′N / 2°21′E</p>
         </section>
@@ -105,9 +108,18 @@ function App() {
           use24Hour={settings.use24Hour}
         />
 
-        <div className="fullscreen-control">
+        <div className="wallpaper-controls">
           <RippleButton
-            className="fullscreen-button"
+            className="control-button settings-launcher"
+            onClick={() => setSettingsOpen(true)}
+            aria-expanded={settingsOpen}
+            aria-controls="settings-title"
+          >
+            <span className="control-button__icon" aria-hidden="true">◇</span>
+            Settings
+          </RippleButton>
+          <RippleButton
+            className="control-button fullscreen-button"
             onClick={toggleFullscreen}
             aria-pressed={isFullscreen}
           >
@@ -116,7 +128,7 @@ function App() {
             </span>
             {isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
           </RippleButton>
-          <p className="fullscreen-control__status" aria-live="polite">
+          <p className="wallpaper-controls__status" aria-live="polite">
             {fullscreenMessage}
           </p>
         </div>

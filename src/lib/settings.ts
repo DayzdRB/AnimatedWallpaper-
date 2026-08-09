@@ -1,4 +1,7 @@
 export type SceneTimeMode = 'paris' | 'local' | 'custom'
+export type WeatherMode = 'clear' | 'rain' | 'storm' | 'snow'
+export type SeasonMode = 'auto' | 'spring' | 'summer' | 'autumn' | 'winter'
+export type ResolvedSeason = Exclude<SeasonMode, 'auto'>
 
 export type WallpaperSettings = {
   timeMode: SceneTimeMode
@@ -9,6 +12,9 @@ export type WallpaperSettings = {
   showGreeting: boolean
   use24Hour: boolean
   ambientMotion: boolean
+  showAircraft: boolean
+  weatherMode: WeatherMode
+  seasonMode: SeasonMode
 }
 
 export const DEFAULT_SETTINGS: WallpaperSettings = {
@@ -20,6 +26,9 @@ export const DEFAULT_SETTINGS: WallpaperSettings = {
   showGreeting: true,
   use24Hour: true,
   ambientMotion: true,
+  showAircraft: true,
+  weatherMode: 'clear',
+  seasonMode: 'auto',
 }
 
 const STORAGE_KEY = 'animated-wallpaper-settings-v1'
@@ -51,3 +60,11 @@ export function getSceneHour(date: Date, settings: WallpaperSettings, parisHour:
   return parisHour
 }
 
+export function resolveSeason(date: Date, seasonMode: SeasonMode): ResolvedSeason {
+  if (seasonMode !== 'auto') return seasonMode
+  const month = date.getMonth() + 1
+  if (month >= 3 && month <= 5) return 'spring'
+  if (month >= 6 && month <= 8) return 'summer'
+  if (month >= 9 && month <= 11) return 'autumn'
+  return 'winter'
+}
