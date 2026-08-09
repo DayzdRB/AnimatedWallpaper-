@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
 import type {
+  AircraftDensity,
+  CloudCoverage,
+  LightningLevel,
   SceneTimeMode,
   SeasonMode,
   WallpaperSettings,
@@ -13,6 +16,9 @@ type SettingsPanelProps = {
   onChange: (settings: WallpaperSettings) => void
   onClose: () => void
   onReset: () => void
+  onStartDestruction: () => void
+  onResetDestruction: () => void
+  destructionActive: boolean
 }
 
 const TIME_MODES: Array<{ value: SceneTimeMode; label: string; detail: string }> = [
@@ -36,17 +42,32 @@ const SEASON_MODES: Array<{ value: SeasonMode; label: string }> = [
   { value: 'winter', label: 'Winter' },
 ]
 
+const LIGHTNING_LEVELS: Array<{ value: LightningLevel; label: string }> = [
+  { value: 'off', label: 'Off' }, { value: 'low', label: 'Low' }, { value: 'medium', label: 'Medium' }, { value: 'high', label: 'High' }, { value: 'severe', label: 'Severe' },
+]
+const CLOUD_COVERAGE: Array<{ value: CloudCoverage; label: string }> = [
+  { value: 'light', label: 'Light' }, { value: 'medium', label: 'Medium' }, { value: 'heavy', label: 'Heavy' },
+]
+const AIRCRAFT_DENSITY: Array<{ value: AircraftDensity; label: string }> = [
+  { value: 'low', label: 'Low' }, { value: 'medium', label: 'Medium' }, { value: 'high', label: 'High' },
+]
+
 export function SettingsPanel({
   isOpen,
   settings,
   onChange,
   onClose,
   onReset,
+  onStartDestruction,
+  onResetDestruction,
+  destructionActive,
 }: SettingsPanelProps) {
   const [draftTime, setDraftTime] = useState(settings.customTime)
+  const [destructionArmed, setDestructionArmed] = useState(false)
 
   useEffect(() => {
     if (isOpen) setDraftTime(settings.customTime)
+    else setDestructionArmed(false)
   }, [isOpen, settings.customTime])
 
   useEffect(() => {
@@ -210,6 +231,10 @@ export function SettingsPanel({
                 </label>
               ))}
             </div>
+            <p className="settings-field-label">Cloud coverage</p>
+            <ChoiceGrid name="cloud-coverage" value={settings.cloudCoverage} options={CLOUD_COVERAGE} onChange={(cloudCoverage) => patchSettings({ cloudCoverage })} />
+            <p className="settings-field-label">Lightning frequency</p>
+            <ChoiceGrid name="lightning-level" value={settings.lightningLevel} options={LIGHTNING_LEVELS} onChange={(lightningLevel) => patchSettings({ lightningLevel })} />
           </section>
 
           <section className="settings-group">
@@ -238,6 +263,30 @@ export function SettingsPanel({
               checked={settings.showAircraft}
               onChange={(checked) => patchSettings({ showAircraft: checked })}
             />
+            <p className="settings-field-label">Aircraft density</p>
+            <ChoiceGrid name="aircraft-density" value={settings.aircraftDensity} options={AIRCRAFT_DENSITY} onChange={(aircraftDensity) => patchSettings({ aircraftDensity })} />
+            <SettingSwitch label="Airliners" detail="A220, A320, 737, and CRJ700" checked={settings.showAirliners} onChange={(checked) => patchSettings({ showAirliners: checked })} />
+            <SettingSwitch label="Business jets" detail="Falcon 8X and Cirrus Vision Jet" checked={settings.showBusinessJets} onChange={(checked) => patchSettings({ showBusinessJets: checked })} />
+            <SettingSwitch label="General aviation" detail="Cessna, Piper, and Diamond aircraft" checked={settings.showGeneralAviation} onChange={(checked) => patchSettings({ showGeneralAviation: checked })} />
+            <SettingSwitch label="Helicopters" detail="Airbus H135 traffic" checked={settings.showHelicopters} onChange={(checked) => patchSettings({ showHelicopters: checked })} />
+          </section>
+
+          <section className="settings-group settings-group--danger">
+            <div className="settings-group__heading">
+              <span>05</span>
+              <div><h3>Fictional destruction mode</h3><p>Cinematic visual sequence only. No real-world simulation data.</p></div>
+            </div>
+            {destructionActive ? (
+              <RippleButton className="settings-reset destruction-control" onClick={() => { onResetDestruction(); setDestructionArmed(false) }}>Reset and rebuild Paris</RippleButton>
+            ) : destructionArmed ? (
+              <div className="destruction-confirm">
+                <p>This begins the warning, blast, aftermath, and reconstruction sequence.</p>
+                <RippleButton className="settings-action destruction-control destruction-control--confirm" onClick={() => { onStartDestruction(); setDestructionArmed(false); onClose() }}>Confirm fictional sequence</RippleButton>
+                <button className="destruction-cancel" onClick={() => setDestructionArmed(false)}>Cancel</button>
+              </div>
+            ) : (
+              <RippleButton className="settings-reset destruction-control" onClick={() => setDestructionArmed(true)}>Arm “Nuke Paris”</RippleButton>
+            )}
           </section>
         </div>
 
@@ -250,6 +299,22 @@ export function SettingsPanel({
       </aside>
     </>
   )
+}
+
+type ChoiceGridProps<T extends string> = {
+  name: string
+  value: T
+  options: Array<{ value: T; label: string }>
+  onChange: (value: T) => void
+}
+
+function ChoiceGrid<T extends string>({ name, value, options, onChange }: ChoiceGridProps<T>) {
+  return <div className="atmosphere-option-grid atmosphere-option-grid--adaptive" role="radiogroup">
+    {options.map((option) => <label className="atmosphere-option" key={option.value}>
+      <input type="radio" name={name} value={option.value} checked={value === option.value} onChange={() => onChange(option.value)} />
+      <span>{option.label}</span>
+    </label>)}
+  </div>
 }
 
 type SettingSwitchProps = {

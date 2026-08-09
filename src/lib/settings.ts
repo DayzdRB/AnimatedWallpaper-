@@ -1,5 +1,8 @@
 export type SceneTimeMode = 'paris' | 'local' | 'custom'
 export type WeatherMode = 'clear' | 'rain' | 'storm' | 'snow'
+export type LightningLevel = 'off' | 'low' | 'medium' | 'high' | 'severe'
+export type CloudCoverage = 'light' | 'medium' | 'heavy'
+export type AircraftDensity = 'low' | 'medium' | 'high'
 export type SeasonMode = 'auto' | 'spring' | 'summer' | 'autumn' | 'winter'
 export type ResolvedSeason = Exclude<SeasonMode, 'auto'>
 
@@ -13,7 +16,14 @@ export type WallpaperSettings = {
   use24Hour: boolean
   ambientMotion: boolean
   showAircraft: boolean
+  showAirliners: boolean
+  showGeneralAviation: boolean
+  showBusinessJets: boolean
+  showHelicopters: boolean
+  aircraftDensity: AircraftDensity
   weatherMode: WeatherMode
+  cloudCoverage: CloudCoverage
+  lightningLevel: LightningLevel
   seasonMode: SeasonMode
 }
 
@@ -27,7 +37,14 @@ export const DEFAULT_SETTINGS: WallpaperSettings = {
   use24Hour: true,
   ambientMotion: true,
   showAircraft: true,
+  showAirliners: true,
+  showGeneralAviation: true,
+  showBusinessJets: true,
+  showHelicopters: true,
+  aircraftDensity: 'medium',
   weatherMode: 'clear',
+  cloudCoverage: 'medium',
+  lightningLevel: 'medium',
   seasonMode: 'auto',
 }
 

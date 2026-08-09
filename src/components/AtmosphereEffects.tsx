@@ -1,23 +1,26 @@
 import { useEffect, useState, type CSSProperties } from 'react'
-import type { ResolvedSeason, WeatherMode } from '../lib/settings'
+import type { CloudCoverage, LightningLevel, ResolvedSeason, WeatherMode } from '../lib/settings'
 
 type EffectStyle = CSSProperties & Record<`--${string}`, string | number>
 
-type AtmosphereEffectsProps = {
+type AtmosphereProps = {
   weather: WeatherMode
   season: ResolvedSeason
   ambientMotion: boolean
+  cloudCoverage: CloudCoverage
+  lightningLevel: LightningLevel
+  lightningKey: number
 }
 
-const rainDrops = Array.from({ length: 72 }, (_, index) => ({
+const rainDrops = Array.from({ length: 86 }, (_, index) => ({
   id: index,
   left: (index * 37 + 11) % 103,
   delay: -((index * 0.137) % 1.8),
-  duration: 0.7 + (index % 6) * 0.08,
+  duration: 0.62 + (index % 6) * 0.07,
   opacity: 0.22 + (index % 5) * 0.1,
 }))
 
-const snowflakes = Array.from({ length: 54 }, (_, index) => ({
+const snowflakes = Array.from({ length: 64 }, (_, index) => ({
   id: index,
   left: (index * 43 + 7) % 101,
   delay: -((index * 0.83) % 12),
@@ -26,7 +29,7 @@ const snowflakes = Array.from({ length: 54 }, (_, index) => ({
   drift: -45 + (index % 10) * 10,
 }))
 
-const seasonalParticles = Array.from({ length: 16 }, (_, index) => ({
+const leaves = Array.from({ length: 24 }, (_, index) => ({
   id: index,
   left: (index * 47 + 9) % 98,
   delay: -((index * 1.17) % 18),
@@ -34,109 +37,91 @@ const seasonalParticles = Array.from({ length: 16 }, (_, index) => ({
   drift: -75 + (index % 9) * 18,
 }))
 
-const rainClouds = Array.from({ length: 7 }, (_, index) => ({
-  id: index,
-  left: -14 + index * 22,
-  top: 3 + (index % 3) * 6,
-  scale: 0.74 + (index % 4) * 0.16,
-  delay: -(index * 8.7),
-}))
+const lightningTiming: Record<Exclude<LightningLevel, 'off'>, [number, number]> = {
+  low: [14_000, 28_000],
+  medium: [7_000, 16_000],
+  high: [3_200, 8_000],
+  severe: [1_100, 4_200],
+}
 
-export function AtmosphereEffects({
-  weather,
-  season,
-  ambientMotion,
-}: AtmosphereEffectsProps) {
-  const [lightningKey, setLightningKey] = useState(0)
-
+export function useLightning(weather: WeatherMode, level: LightningLevel, ambientMotion: boolean) {
+  const [key, setKey] = useState(0)
   useEffect(() => {
-    if (weather !== 'storm' || !ambientMotion) return
+    if (weather !== 'storm' || level === 'off' || !ambientMotion) return
     let timer = 0
-    function scheduleFlash() {
+    const [minimum, maximum] = lightningTiming[level]
+    function schedule() {
       timer = window.setTimeout(() => {
-        setLightningKey((key) => key + 1)
-        scheduleFlash()
-      }, 7_000 + Math.random() * 15_000)
+        setKey((value) => value + 1)
+        schedule()
+      }, minimum + Math.random() * (maximum - minimum))
     }
-    scheduleFlash()
+    schedule()
     return () => window.clearTimeout(timer)
-  }, [weather, ambientMotion])
+  }, [weather, level, ambientMotion])
+  return key
+}
 
-  const showRain = weather === 'rain' || weather === 'storm'
-  const showSnow = weather === 'snow'
-  const showSeasonParticles = weather === 'clear' && (season === 'spring' || season === 'autumn')
+export function AtmosphereBackground({ weather, cloudCoverage, lightningLevel, lightningKey, ambientMotion }: AtmosphereProps) {
+  const cloudAsset = weather === 'storm'
+    ? '/assets/clouds-storm-base.png'
+    : weather === 'rain' || weather === 'snow'
+      ? '/assets/clouds-rain.png'
+      : '/assets/clouds-fair.png'
 
   return (
-    <div
-      className={`atmosphere atmosphere--${weather}${ambientMotion ? '' : ' atmosphere--still'}`}
-      aria-hidden="true"
-    >
-      {showRain && (
-        <div className="weather-cloud-bank">
-          {rainClouds.map((cloud) => (
-            <i
-              key={cloud.id}
-              style={{
-                '--cloud-left': `${cloud.left}%`,
-                '--cloud-top': `${cloud.top}%`,
-                '--cloud-scale': cloud.scale,
-                '--cloud-delay': `${cloud.delay}s`,
-              } as EffectStyle}
-            />
-          ))}
-        </div>
+    <div className={`weather-back weather-back--${weather} weather-back--${cloudCoverage}${ambientMotion ? '' : ' weather-back--still'}`}>
+      <img className="weather-cloud weather-cloud--far" src={cloudAsset} alt="" />
+      <img className="weather-cloud weather-cloud--near" src={cloudAsset} alt="" />
+      {weather === 'storm' && lightningLevel !== 'off' && lightningKey > 0 && (
+        <img key={lightningKey} className="weather-cloud weather-cloud--flash" src="/assets/clouds-storm-flash.png" alt="" />
       )}
+    </div>
+  )
+}
 
+export function AtmosphereForeground({ weather, season, ambientMotion, lightningLevel, lightningKey }: AtmosphereProps) {
+  const showRain = weather === 'rain' || weather === 'storm'
+  const showSnow = weather === 'snow'
+
+  useEffect(() => {
+    if (weather !== 'storm' || lightningLevel === 'off' || lightningKey < 1 || !ambientMotion) return
+    const delay = 520 + (lightningKey % 4) * 360
+    const timer = window.setTimeout(() => {
+      const thunder = new Audio('/assets/thunder.ogg')
+      thunder.volume = lightningLevel === 'severe' ? 0.78 : lightningLevel === 'high' ? 0.62 : 0.45
+      void thunder.play().catch(() => undefined)
+    }, delay)
+    return () => window.clearTimeout(timer)
+  }, [ambientMotion, lightningKey, lightningLevel, weather])
+
+  return (
+    <div className={`atmosphere-front atmosphere-front--${weather}${ambientMotion ? '' : ' atmosphere-front--still'}`}>
+      {showRain && <div className="rain-mist" />}
       {showRain && (
         <div className="weather-layer weather-layer--rain">
-          {rainDrops.map((drop) => (
-            <i
-              key={drop.id}
-              style={{
-                '--drop-left': `${drop.left}%`,
-                '--drop-delay': `${drop.delay}s`,
-                '--drop-duration': `${drop.duration}s`,
-                '--drop-opacity': drop.opacity,
-              } as EffectStyle}
-            />
-          ))}
+          {rainDrops.map((drop) => <i key={drop.id} style={{
+            '--drop-left': `${drop.left}%`, '--drop-delay': `${drop.delay}s`, '--drop-duration': `${drop.duration}s`, '--drop-opacity': drop.opacity,
+          } as EffectStyle} />)}
         </div>
       )}
-
       {showSnow && (
         <div className="weather-layer weather-layer--snow">
-          {snowflakes.map((flake) => (
-            <i
-              key={flake.id}
-              style={{
-                '--flake-left': `${flake.left}%`,
-                '--flake-delay': `${flake.delay}s`,
-                '--flake-duration': `${flake.duration}s`,
-                '--flake-size': `${flake.size}px`,
-                '--flake-drift': `${flake.drift}px`,
-              } as EffectStyle}
-            />
-          ))}
+          {snowflakes.map((flake) => <i key={flake.id} style={{
+            '--flake-left': `${flake.left}%`, '--flake-delay': `${flake.delay}s`, '--flake-duration': `${flake.duration}s`, '--flake-size': `${flake.size}px`, '--flake-drift': `${flake.drift}px`,
+          } as EffectStyle} />)}
         </div>
       )}
-
-      {weather === 'storm' && (
-        <div className="weather-layer weather-layer--lightning" key={lightningKey} />
+      {weather === 'storm' && lightningLevel !== 'off' && lightningKey > 0 && (
+        <div className={`lightning-bolt lightning-bolt--${lightningLevel}`} key={lightningKey}>
+          <svg viewBox="0 0 600 900"><path d="M348 0 225 326l92-20-137 270 87-25-103 349 251-432-103 27 154-306-96 25L448 0Z" /></svg>
+        </div>
       )}
-
-      {showSeasonParticles && (
-        <div className={`season-particles season-particles--${season}`}>
-          {seasonalParticles.map((particle) => (
-            <i
-              key={particle.id}
-              style={{
-                '--particle-left': `${particle.left}%`,
-                '--particle-delay': `${particle.delay}s`,
-                '--particle-duration': `${particle.duration}s`,
-                '--particle-drift': `${particle.drift}px`,
-              } as EffectStyle}
-            />
-          ))}
+      {weather === 'clear' && season === 'autumn' && (
+        <div className="season-particles season-particles--autumn">
+          {leaves.map((leaf) => <i key={leaf.id} style={{
+            '--particle-left': `${leaf.left}%`, '--particle-delay': `${leaf.delay}s`, '--particle-duration': `${leaf.duration}s`, '--particle-drift': `${leaf.drift}px`,
+          } as EffectStyle} />)}
         </div>
       )}
     </div>

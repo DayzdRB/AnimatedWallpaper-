@@ -5,6 +5,220 @@
   text-rendering: optimizeLegibility;
 }
 
+/* v0.4 — true layered renderer */
+.scene--layered {
+  background: #101c31;
+  inset: 0;
+  overflow: hidden;
+  position: absolute;
+}
+
+.scene-layer,
+.scene-depth {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.scene-sky {
+  background-position: center;
+  background-size: cover;
+  transition: background-image 1.8s ease;
+  z-index: 0;
+}
+
+.scene-sky--dawn { background-image: url('/assets/sky-dawn.svg'); }
+.scene-sky--day { background-image: url('/assets/sky-day.svg'); }
+.scene-sky--golden { background-image: url('/assets/sky-golden.svg'); }
+.scene-sky--evening { background-image: url('/assets/sky-evening.svg'); }
+.scene-sky--night { background-image: url('/assets/sky-night.svg'); }
+
+.scene-depth--weather-back { z-index: 2; }
+.scene-depth--city { z-index: 4; }
+.scene-depth--aircraft { z-index: 5; }
+.scene-depth--occlusion { z-index: 6; }
+.scene-depth--weather-front { z-index: 7; }
+
+.scene-plate {
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  object-position: center;
+  pointer-events: none;
+  position: absolute;
+  transition: filter 1.4s linear, opacity 1.4s linear;
+  width: 100%;
+}
+
+.scene-plate--day { filter: brightness(var(--scene-brightness)) saturate(var(--scene-saturation)); }
+.scene-plate--night { mix-blend-mode: normal; }
+.scene-plate--season { z-index: 4; }
+
+.scene--layered .scene__dynamic-light {
+  mix-blend-mode: soft-light;
+  z-index: 8;
+}
+
+.scene--layered .scene__grain { z-index: 9; }
+.scene--layered .scene__stars { z-index: 1; }
+
+.celestial-cycle { z-index: 1; }
+.celestial-asset {
+  filter: saturate(.92);
+  left: var(--celestial-x);
+  opacity: var(--weather-visibility);
+  pointer-events: none;
+  position: absolute;
+  top: var(--celestial-y);
+  transform: translate(-50%, -50%);
+  transition: left 1.2s linear, opacity 1.2s ease, top 1.2s linear;
+  width: clamp(11rem, 23vw, 29rem);
+}
+.celestial-asset--day { width: clamp(10rem, 20vw, 25rem); }
+.celestial-asset--sunset { width: clamp(12rem, 25vw, 31rem); }
+.celestial-asset--moon { width: clamp(8rem, 15vw, 18rem); }
+
+.weather-back,
+.atmosphere-front { inset: 0; overflow: hidden; position: absolute; }
+.weather-cloud {
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  width: 100%;
+}
+.weather-cloud--far { animation: cloud-layer-far 85s ease-in-out infinite alternate; left: -4%; opacity: .5; top: -7%; transform: scale(1.08); }
+.weather-cloud--near { animation: cloud-layer-near 58s ease-in-out infinite alternate; left: 5%; opacity: .32; top: 2%; transform: scale(1.23); }
+.weather-back--light .weather-cloud--near { display: none; }
+.weather-back--light .weather-cloud--far { opacity: .34; transform: scale(.92); }
+.weather-back--heavy .weather-cloud--far { opacity: .82; transform: scale(1.22); }
+.weather-back--heavy .weather-cloud--near { opacity: .68; transform: scale(1.42); }
+.weather-back--storm .weather-cloud--far { opacity: .9; }
+.weather-back--storm .weather-cloud--near { opacity: .62; }
+.weather-cloud--flash {
+  animation: storm-cloud-flash 900ms steps(1) both;
+  inset: 0;
+  opacity: 0;
+}
+
+@keyframes cloud-layer-far { to { translate: 9% 1.5%; } }
+@keyframes cloud-layer-near { to { translate: -11% 2%; } }
+@keyframes storm-cloud-flash { 0%,7%,14%,100% { opacity: 0; } 3% { opacity: .92; } 10% { opacity: .46; } }
+
+.rain-mist {
+  background: linear-gradient(180deg, rgba(101,126,151,.08), rgba(192,210,222,.2) 58%, rgba(210,221,227,.12));
+  inset: 0;
+  position: absolute;
+}
+.atmosphere-front--storm .rain-mist { background: linear-gradient(180deg, rgba(18,29,47,.2), rgba(113,134,151,.2)); }
+
+.lightning-bolt {
+  animation: visible-bolt 900ms steps(1) both;
+  filter: drop-shadow(0 0 12px #eaf4ff) drop-shadow(0 0 34px #9ebeff);
+  height: 83%;
+  left: 18%;
+  opacity: 0;
+  position: absolute;
+  top: -4%;
+  width: 24%;
+}
+.lightning-bolt svg { fill: rgba(240,248,255,.94); height: 100%; width: 100%; }
+.lightning-bolt--high { left: 57%; transform: scale(.88); }
+.lightning-bolt--severe { left: 36%; transform: scale(1.12); }
+@keyframes visible-bolt { 0%,8%,16%,100% { opacity: 0; } 4% { opacity: 1; } 12% { opacity: .55; } }
+
+.aircraft-sprite {
+  animation: aircraft-sprite-flight var(--aircraft-duration) linear forwards;
+  filter: drop-shadow(0 3px 4px rgba(3,8,18,.3));
+  left: -16rem;
+  pointer-events: none;
+  position: absolute;
+  top: var(--aircraft-top);
+  width: var(--aircraft-width);
+}
+.aircraft-sprite__body { animation: aircraft-sprite-bob 7s ease-in-out infinite; display: block; }
+.aircraft-sprite__body img { display: block; transform: none; width: 100%; }
+.aircraft-sprite--dawn .aircraft-sprite__body { filter: brightness(.84) sepia(.08) hue-rotate(334deg) saturate(.9); }
+.aircraft-sprite--day .aircraft-sprite__body { filter: brightness(1.02) saturate(.92); }
+.aircraft-sprite--golden .aircraft-sprite__body { filter: brightness(.9) sepia(.2) saturate(1.02); }
+.aircraft-sprite--evening .aircraft-sprite__body { filter: brightness(.62) saturate(.7) hue-rotate(8deg); }
+.aircraft-sprite--night .aircraft-sprite__body { filter: brightness(.38) saturate(.58) hue-rotate(8deg); }
+.aircraft-nav { border-radius: 50%; height: 3px; position: absolute; width: 3px; z-index: 2; }
+.aircraft-nav--red { background: #ff3434; box-shadow: 0 0 6px #ff3434; left: 22%; top: 49%; }
+.aircraft-nav--green { background: #43ef82; box-shadow: 0 0 6px #43ef82; right: 24%; top: 52%; }
+.aircraft-nav--beacon { animation: beacon-pulse 1.25s steps(1) infinite; background: #ff2d2d; box-shadow: 0 0 8px #ff2d2d; left: 53%; top: 34%; }
+.aircraft-nav--strobe { animation: strobe-double 1.55s steps(1) infinite; background: white; box-shadow: 0 0 10px white; left: 47%; top: 67%; }
+.aircraft-landing-light {
+  background: linear-gradient(90deg, rgba(255,248,211,.42), transparent);
+  clip-path: polygon(0 42%,100% 0,100% 100%,0 58%);
+  height: 2.7rem;
+  left: 76%;
+  position: absolute;
+  top: 37%;
+  width: 7rem;
+}
+@keyframes aircraft-sprite-flight { 0% { opacity:0; transform:translateX(0); } 7%,93% { opacity:.94; } 100% { opacity:0; transform:translateX(calc(100vw + 34rem)); } }
+@keyframes aircraft-sprite-bob { 0%,100% { transform:translateY(0) rotate(-.25deg); } 50% { transform:translateY(-4px) rotate(.18deg); } }
+
+.destruction { inset: 0; pointer-events: none; position: fixed; z-index: 30; }
+.destruction__scene { inset: 0; overflow: hidden; position: absolute; }
+.destruction__warning {
+  align-items: center; backdrop-filter: blur(20px); background: rgba(29,8,8,.7); border: 1px solid rgba(255,184,154,.45); display:flex; flex-direction:column; gap:.6rem; left:50%; letter-spacing:.17em; padding:1.4rem 2.2rem; position:absolute; text-align:center; text-transform:uppercase; top:50%; transform:translate(-50%,-50%); z-index:5;
+}
+.destruction__warning strong { font: 400 5.5rem/1 Georgia,serif; }
+.destruction__warning span,.destruction__warning small { font-size:.62rem; }
+.destruction__aftermath { height:100%; inset:0; object-fit:cover; opacity:0; position:absolute; width:100%; }
+.destruction__fireball { bottom:34%; left:49%; opacity:0; position:absolute; transform:translate(-50%,50%) scale(.015); transform-origin:center; width:min(68vw,72rem); }
+.destruction__mushroom { bottom:-5%; left:50%; opacity:0; position:absolute; transform:translateX(-50%) scale(.5); transform-origin:bottom; width:min(72vw,76rem); }
+.destruction__shockwave { border:3px solid rgba(255,244,217,.8); border-radius:50%; box-shadow:0 0 28px rgba(255,224,183,.72),inset 0 0 28px rgba(255,224,183,.72); height:2rem; left:49%; opacity:0; position:absolute; top:58%; transform:translate(-50%,-50%) scale(.1); width:2rem; }
+.destruction__camera-flash { background:white; inset:0; opacity:0; position:absolute; }
+.destruction__ash { background:radial-gradient(ellipse at center,transparent 8%,rgba(28,21,19,.36) 78%),linear-gradient(180deg,rgba(25,20,21,.35),rgba(63,45,36,.18)); inset:0; opacity:0; position:absolute; }
+.destruction--blast .destruction__fireball { animation:fireball-approach 7.5s cubic-bezier(.15,.65,.2,1) both; }
+.destruction--blast .destruction__shockwave { animation:shockwave-camera 6s ease-in both .8s; }
+.destruction--blast .destruction__camera-flash { animation:camera-overtake 7.2s steps(1) both; }
+.destruction--aftermath .destruction__aftermath { opacity:1; }
+.destruction--aftermath .destruction__mushroom { animation:mushroom-rise 15s ease-out both; }
+.destruction--aftermath .destruction__ash { animation:ash-arrive 4s ease both; opacity:.86; }
+.destruction--rebuild .destruction__aftermath { animation:rebuild-city 17s ease-in-out both; }
+.destruction--rebuild .destruction__mushroom { animation:rebuild-smoke 14s ease-in both; opacity:.78; }
+.destruction--rebuild .destruction__ash { animation:rebuild-ash 13s ease-in both; opacity:.7; }
+.destruction__rebuild-label { bottom:8%; font-size:.64rem; left:50%; letter-spacing:.22em; position:absolute; text-transform:uppercase; transform:translateX(-50%); }
+@keyframes fireball-approach { 0% { opacity:.9; transform:translate(-50%,50%) scale(.015); } 32% { opacity:1; transform:translate(-50%,40%) scale(.32); } 72% { opacity:1; transform:translate(-50%,28%) scale(1.05); } 100% { opacity:0; transform:translate(-50%,10%) scale(3.4); } }
+@keyframes shockwave-camera { 0% { opacity:0; transform:translate(-50%,-50%) scale(.2); } 9% { opacity:.9; } 100% { opacity:0; transform:translate(-50%,-50%) scale(75); } }
+@keyframes camera-overtake { 0%,64%,72%,100% { opacity:0; } 66% { opacity:1; } 69% { opacity:.72; } }
+@keyframes mushroom-rise { from { opacity:0; transform:translateX(-50%) scale(.38); } to { opacity:.84; transform:translateX(-50%) scale(1.02); } }
+@keyframes ash-arrive { from { opacity:0; } to { opacity:.86; } }
+@keyframes rebuild-city { 0%,35% { opacity:1; filter:saturate(.35) brightness(.62); } 100% { opacity:0; filter:saturate(1) brightness(1); } }
+@keyframes rebuild-smoke { to { opacity:0; transform:translateX(-50%) translateY(-12%) scale(1.15); } }
+@keyframes rebuild-ash { to { opacity:0; } }
+
+.wallpaper--destruction-active .wallpaper__masthead,
+.wallpaper--destruction-active .wallpaper__greeting,
+.wallpaper--destruction-active .wallpaper__footer { animation:ui-interference .18s steps(2) infinite; }
+@keyframes ui-interference { 0% { translate:0; } 50% { translate:1px -1px; } 100% { translate:-1px 1px; } }
+
+.atmosphere-option-grid--adaptive { grid-template-columns:repeat(auto-fit,minmax(4.2rem,1fr)); }
+.settings-group--danger { border-color:rgba(233,132,103,.35); }
+.destruction-control { width:100%; }
+.destruction-control--confirm { background:linear-gradient(145deg,rgba(161,55,37,.72),rgba(73,23,22,.58)); }
+.destruction-confirm { display:grid; gap:.7rem; }
+.destruction-confirm p { font-size:.7rem; line-height:1.5; opacity:.74; }
+.destruction-cancel { background:none; border:0; cursor:pointer; font-size:.62rem; letter-spacing:.15em; opacity:.7; text-transform:uppercase; }
+
+@media (max-width:760px) {
+  .scene-plate { object-position:center; }
+  .celestial-asset { width:15rem; }
+  .aircraft-sprite { width:calc(var(--aircraft-width) * .72); }
+  .destruction__mushroom { width:105vw; }
+  .destruction__fireball { width:110vw; }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .aircraft-sprite { display:none; }
+  .weather-cloud { animation:none; }
+  .destruction--blast .destruction__fireball,
+  .destruction--blast .destruction__shockwave { animation-duration:.01ms; }
+}
+
 /* v0.3 — continuous celestial light, seasonal surfaces, and modeled air traffic */
 
 .scene .scene__artwork--day {
@@ -304,6 +518,12 @@
   .settings-panel { padding-top: max(1.25rem, env(safe-area-inset-top)); }
   .settings-panel h2 { font-size: clamp(3.2rem, 17vw, 4.5rem); }
 }
+
+/* v0.4 final cascade guards */
+.scene--layered .celestial-cycle { z-index: 1; }
+.scene--layered .scene__stars { z-index: 1; }
+.scene--layered .scene__dynamic-light { z-index: 8; }
+.scene--layered .scene__grain { z-index: 9; }
 
 .wallpaper--still .weather-cloud-bank i,
 .wallpaper--still .aircraft__motion,

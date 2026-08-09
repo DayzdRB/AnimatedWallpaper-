@@ -4,7 +4,7 @@ An original, cinematic Paris wallpaper rendered entirely in the browser.
 
 ## Current milestone
 
-**v0.3.0 — Paris Sky Traffic**
+**v0.4.0 — Layered Paris**
 
 - Full-viewport, time-aware Paris scene
 - Original illustrated Paris day and night artwork
@@ -28,6 +28,13 @@ An original, cinematic Paris wallpaper rendered entirely in the browser.
 - Continuous sun and moon movement with time-progressive scene color and brightness
 - Automatic or manual seasons, including autumn foliage and winter snow accumulation
 - Neutral translucent settings glass with a reliably visible close control
+- Independent cloud-free sky, celestial, cloud, city, aircraft, tower, foreground, season, and precipitation layers
+- East-to-west sun and moon arcs with separate sunrise, daylight, sunset, and moon artwork
+- Real airline/manufacturer liveries rendered as detailed aviation illustrations
+- Aircraft flight corridors behind the Eiffel Tower and foreground architecture
+- Light, medium, and heavy cloud coverage plus Off-to-Severe lightning frequency
+- Fictional two-step destruction sequence with warning, expanding blast, camera shockwave, aftermath, and gradual reconstruction
+- Dedicated portrait Paris layers and occlusion masks for mobile
 
 No photography or external artwork is required.
 

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1672 941">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#050b1b"/><stop offset=".62" stop-color="#121f3b"/><stop offset="1" stop-color="#263853"/>
+    </linearGradient>
+    <radialGradient id="air" cx="48%" cy="75%" r="72%"><stop stop-color="#536682" stop-opacity=".18"/><stop offset="1" stop-color="#101a31" stop-opacity="0"/></radialGradient>
+    <filter id="grain"><feTurbulence baseFrequency=".65" numOctaves="4" seed="21"/><feColorMatrix values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 .07 0"/></filter>
+  </defs>
+  <rect width="1672" height="941" fill="url(#sky)"/><rect width="1672" height="941" fill="url(#air)"/>
+  <rect width="1672" height="941" filter="url(#grain)" opacity=".2"/>
+</svg>

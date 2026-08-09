@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { EiffelScene } from './components/EiffelScene'
 import { AircraftFlyby } from './components/AircraftFlyby'
-import { AtmosphereEffects } from './components/AtmosphereEffects'
+import { AtmosphereBackground, AtmosphereForeground, useLightning } from './components/AtmosphereEffects'
+import { DestructionSequence } from './components/DestructionSequence'
 import { ParisClock } from './components/ParisClock'
 import { SettingsPanel } from './components/SettingsPanel'
 import { AuroraText } from './components/ui/AuroraText'
@@ -26,6 +27,8 @@ function App() {
   const [fullscreenMessage, setFullscreenMessage] = useState('')
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settings, setSettings] = useState<WallpaperSettings>(loadSettings)
+  const [destructionRun, setDestructionRun] = useState(0)
+  const [destructionPhase, setDestructionPhase] = useState('idle')
 
   useEffect(() => {
     const tick = window.setInterval(() => setNow(new Date()), 1_000)
@@ -51,6 +54,15 @@ function App() {
   const greeting = getFrenchGreeting(sceneHour)
   const season = resolveSeason(now, settings.seasonMode)
   const fullscreenSupported = Boolean(document.documentElement.requestFullscreen)
+  const lightningKey = useLightning(settings.weatherMode, settings.lightningLevel, settings.ambientMotion)
+  const aircraftCategories = useMemo(() => ({
+    airliner: settings.showAirliners,
+    business: settings.showBusinessJets,
+    ga: settings.showGeneralAviation,
+    helicopter: settings.showHelicopters,
+  }), [settings.showAirliners, settings.showBusinessJets, settings.showGeneralAviation, settings.showHelicopters])
+  const handleDestructionPhase = useCallback((phase: string) => setDestructionPhase(phase), [])
+  const handleDestructionComplete = useCallback(() => setDestructionRun(0), [])
 
   async function toggleFullscreen() {
     if (!fullscreenSupported) {
@@ -71,7 +83,7 @@ function App() {
 
   return (
     <main
-      className={`wallpaper wallpaper--${timeOfDay} wallpaper--season-${season}${settings.ambientMotion ? '' : ' wallpaper--still'}`}
+      className={`wallpaper wallpaper--${timeOfDay} wallpaper--season-${season}${settings.ambientMotion ? '' : ' wallpaper--still'}${destructionPhase !== 'idle' ? ' wallpaper--destruction-active' : ''}`}
     >
       <EiffelScene
         timeOfDay={timeOfDay}
@@ -79,23 +91,18 @@ function App() {
         sceneTime={sceneTime}
         season={season}
         weather={settings.weatherMode}
+        backgroundWeather={<AtmosphereBackground weather={settings.weatherMode} season={season} ambientMotion={settings.ambientMotion} cloudCoverage={settings.cloudCoverage} lightningLevel={settings.lightningLevel} lightningKey={lightningKey} />}
+        aircraftLayer={<AircraftFlyby enabled={settings.showAircraft && settings.ambientMotion} isNight={isSceneNight(sceneTime)} timeOfDay={timeOfDay} density={settings.aircraftDensity} categories={aircraftCategories} />}
+        foregroundWeather={<AtmosphereForeground weather={settings.weatherMode} season={season} ambientMotion={settings.ambientMotion} cloudCoverage={settings.cloudCoverage} lightningLevel={settings.lightningLevel} lightningKey={lightningKey} />}
       />
-      <AtmosphereEffects
-        weather={settings.weatherMode}
-        season={season}
-        ambientMotion={settings.ambientMotion}
-      />
-      <AircraftFlyby
-        enabled={settings.showAircraft && settings.ambientMotion}
-        isNight={isSceneNight(sceneTime)}
-      />
+      <DestructionSequence runId={destructionRun} onPhaseChange={handleDestructionPhase} onComplete={handleDestructionComplete} />
 
       <header className="wallpaper__masthead">
         <div>
           <p className="eyebrow">Paris / France</p>
           <p className="edition">Animated study no. 01</p>
         </div>
-        <p className="version">v0.3.0</p>
+        <p className="version">v0.4.0</p>
       </header>
 
       {settings.showGreeting && (
@@ -151,6 +158,9 @@ function App() {
         onChange={setSettings}
         onClose={() => setSettingsOpen(false)}
         onReset={() => setSettings(DEFAULT_SETTINGS)}
+        onStartDestruction={() => setDestructionRun((run) => run + 1)}
+        onResetDestruction={() => { setDestructionRun(0); setDestructionPhase('idle') }}
+        destructionActive={destructionPhase !== 'idle'}
       />
     </main>
   )
