@@ -1,0 +1,57 @@
+# AnimatedWallpaper-
+
+An original, cinematic Paris wallpaper rendered entirely in the browser.
+
+## Current milestone
+
+**v0.0.1 — Paris Clock**
+
+- Full-viewport, time-aware Paris scene
+- Original CSS and SVG Eiffel Tower artwork
+- Live Paris time using the `Europe/Paris` IANA time zone
+- Live viewer-local time
+- French greeting based on the current time in Paris
+- Reusable aurora text and click-origin ripple button components
+- Browser fullscreen control with a graceful unsupported state
+- Responsive desktop and mobile composition
+- Reduced-motion support
+
+No photography or external artwork is required.
+
+## Run locally
+
+```bash
+npm install
+npm run dev
+```
+
+Create a production build with:
+
+```bash
+npm run build
+```
+
+The production files are written to `dist/`.
+
+## Deploy to Vercel
+
+Import this repository into Vercel. The framework should be detected as **Vite** automatically.
+
+- Build command: `npm run build`
+- Output directory: `dist`
+- Environment variables: none
+
+## Web-first strategy
+
+The wallpaper renderer is being developed and polished on the web first. Desktop integration is deliberately postponed until the renderer, scenes, transitions, and performance are mature.
+
+## Planned features
+
+- Live Paris weather
+- Rain, snow, clouds, and lightning
+- Seasonal atmosphere
+- Sun and moon movement
+- Comets and rare sky events
+- Wallpaper packs
+- Desktop integration through Tauri
+
