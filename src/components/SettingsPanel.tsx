@@ -1,18 +1,21 @@
-import { useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
+import type { SceneEnvironment } from '../lib/scene-environment'
 import type {
   AircraftDensity,
   CloudCoverage,
   LightningLevel,
   SceneTimeMode,
   SeasonMode,
+  SunTracking,
   WallpaperSettings,
   WeatherMode,
 } from '../lib/settings'
 import { RippleButton } from './ui/RippleButton'
 
-type SettingsPanelProps = {
+type Props = {
   isOpen: boolean
   settings: WallpaperSettings
+  environment: SceneEnvironment
   onChange: (settings: WallpaperSettings) => void
   onClose: () => void
   onReset: () => void
@@ -21,322 +24,364 @@ type SettingsPanelProps = {
   destructionActive: boolean
 }
 
-const TIME_MODES: Array<{ value: SceneTimeMode; label: string; detail: string }> = [
-  { value: 'paris', label: 'Paris', detail: 'Live French time' },
-  { value: 'local', label: 'Local', detail: 'Your current time' },
-  { value: 'custom', label: 'Set time', detail: 'Freeze the lighting' },
-]
+function Group({ title, note, children }: { title: string; note?: string; children: ReactNode }) {
+  return (
+    <section className="settings-group">
+      <h3>{title}</h3>
+      {note && <p className="settings-group__note">{note}</p>}
+      {children}
+    </section>
+  )
+}
 
-const WEATHER_MODES: Array<{ value: WeatherMode; label: string }> = [
-  { value: 'clear', label: 'Clear' },
-  { value: 'rain', label: 'Rain' },
-  { value: 'storm', label: 'Storm' },
-  { value: 'snow', label: 'Snow' },
-]
+function Toggle({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string
+  checked: boolean
+  onChange: (value: boolean) => void
+}) {
+  return (
+    <label className="settings-toggle">
+      <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} />
+      <span>{label}</span>
+    </label>
+  )
+}
 
-const SEASON_MODES: Array<{ value: SeasonMode; label: string }> = [
-  { value: 'auto', label: 'Auto' },
-  { value: 'spring', label: 'Spring' },
-  { value: 'summer', label: 'Summer' },
-  { value: 'autumn', label: 'Autumn' },
-  { value: 'winter', label: 'Winter' },
-]
+function Choice<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string
+  value: T
+  options: Array<[T, string]>
+  onChange: (value: T) => void
+}) {
+  return (
+    <label className="settings-field">
+      <span>{label}</span>
+      <select value={value} onChange={(event) => onChange(event.target.value as T)}>
+        {options.map(([optionValue, optionLabel]) => (
+          <option key={optionValue} value={optionValue}>
+            {optionLabel}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
+}
 
-const LIGHTNING_LEVELS: Array<{ value: LightningLevel; label: string }> = [
-  { value: 'off', label: 'Off' }, { value: 'low', label: 'Low' }, { value: 'medium', label: 'Medium' }, { value: 'high', label: 'High' }, { value: 'severe', label: 'Severe' },
-]
-const CLOUD_COVERAGE: Array<{ value: CloudCoverage; label: string }> = [
-  { value: 'light', label: 'Light' }, { value: 'medium', label: 'Medium' }, { value: 'heavy', label: 'Heavy' },
-]
-const AIRCRAFT_DENSITY: Array<{ value: AircraftDensity; label: string }> = [
-  { value: 'low', label: 'Low' }, { value: 'medium', label: 'Medium' }, { value: 'high', label: 'High' },
-]
+function Slider({
+  label,
+  value,
+  min,
+  max,
+  step,
+  format,
+  onChange,
+}: {
+  label: string
+  value: number
+  min: number
+  max: number
+  step: number
+  format?: (value: number) => string
+  onChange: (value: number) => void
+}) {
+  return (
+    <label className="settings-field settings-field--slider">
+      <span>
+        {label}
+        <em>{format ? format(value) : value.toFixed(2)}</em>
+      </span>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(event) => onChange(Number(event.target.value))}
+      />
+    </label>
+  )
+}
 
 export function SettingsPanel({
   isOpen,
   settings,
+  environment,
   onChange,
   onClose,
   onReset,
   onStartDestruction,
   onResetDestruction,
   destructionActive,
-}: SettingsPanelProps) {
-  const [draftTime, setDraftTime] = useState(settings.customTime)
-  const [destructionArmed, setDestructionArmed] = useState(false)
+}: Props) {
+  if (!isOpen) return null
 
-  useEffect(() => {
-    if (isOpen) setDraftTime(settings.customTime)
-    else setDestructionArmed(false)
-  }, [isOpen, settings.customTime])
-
-  useEffect(() => {
-    if (!isOpen) return
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, onClose])
-
-  function patchSettings(patch: Partial<WallpaperSettings>) {
-    onChange({ ...settings, ...patch })
-  }
-
-  function applyCustomTime() {
-    patchSettings({ customTime: draftTime, timeMode: 'custom' })
-  }
+  const update = <K extends keyof WallpaperSettings>(key: K, value: WallpaperSettings[K]) =>
+    onChange({ ...settings, [key]: value })
 
   return (
-    <>
-      <button
-        className={`settings-backdrop${isOpen ? ' settings-backdrop--visible' : ''}`}
-        aria-label="Close settings"
-        onClick={onClose}
-        tabIndex={isOpen ? 0 : -1}
-      />
-      <aside
-        className={`settings-panel${isOpen ? ' settings-panel--open' : ''}`}
-        aria-hidden={!isOpen}
-        aria-labelledby="settings-title"
-        aria-modal="true"
-        inert={!isOpen}
-        role="dialog"
-      >
-        <div className="settings-panel__topline">
-          <div>
-            <p className="settings-panel__coordinates">48°51′N · 2°21′E</p>
-            <p className="settings-panel__kicker">Paris wallpaper control</p>
-          </div>
-          <RippleButton className="settings-panel__close" onClick={onClose} aria-label="Close settings">
-            ×
-          </RippleButton>
+    <div className="settings" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <div className="settings__panel">
+        <header className="settings__header">
+          <h2 id="settings-title">Wallpaper settings</h2>
+          <button className="settings__close" type="button" onClick={onClose} aria-label="Close settings">
+            ✕
+          </button>
+        </header>
+
+        {/* A readout of what the physics is currently doing, which makes the
+            whole scene debuggable without opening a console. */}
+        <div className="settings__readout">
+          <span>
+            Sun <strong>{environment.sun.apparentAltitude.toFixed(1)}°</strong> alt
+          </span>
+          <span>
+            <strong>{environment.sun.azimuth.toFixed(0)}°</strong> az
+          </span>
+          <span>{environment.band}</span>
+          <span>
+            Moon <strong>{Math.round(environment.moon.illumination * 100)}%</strong>
+          </span>
+          <span>{environment.season}</span>
         </div>
 
-        <h2 id="settings-title">Réglages</h2>
-
-        <div className="settings-panel__scroll">
-          <section className="settings-group">
-            <div className="settings-group__heading">
-              <span>01</span>
-              <div>
-                <h3>Wallpaper lighting</h3>
-                <p>Choose which clock controls the Paris atmosphere.</p>
-              </div>
-            </div>
-            <div className="time-mode-grid" role="radiogroup" aria-label="Wallpaper time source">
-              {TIME_MODES.map((mode) => (
-                <label className="time-mode" key={mode.value}>
-                  <input
-                    type="radio"
-                    name="time-mode"
-                    value={mode.value}
-                    checked={settings.timeMode === mode.value}
-                    onChange={() => patchSettings({ timeMode: mode.value })}
-                  />
-                  <span className="time-mode__copy">
-                    <strong>{mode.label}</strong>
-                    <small>{mode.detail}</small>
-                  </span>
-                </label>
-              ))}
-            </div>
-
-            <div className={`custom-time${settings.timeMode === 'custom' ? ' custom-time--active' : ''}`}>
-              <label htmlFor="custom-scene-time">Custom scene time</label>
-              <div className="custom-time__controls">
+        <div className="settings__body">
+          <Group title="Time">
+            <Choice<SceneTimeMode>
+              label="Clock source"
+              value={settings.timeMode}
+              options={[
+                ['paris', 'Paris time'],
+                ['local', 'Your local time'],
+                ['custom', 'Custom time'],
+              ]}
+              onChange={(value) => update('timeMode', value)}
+            />
+            {settings.timeMode === 'custom' && (
+              <label className="settings-field">
+                <span>Paris wall clock</span>
                 <input
-                  id="custom-scene-time"
                   type="time"
-                  value={draftTime}
-                  onChange={(event) => setDraftTime(event.target.value)}
+                  value={settings.customTime}
+                  onChange={(event) => update('customTime', event.target.value)}
                 />
-                <RippleButton className="settings-action" onClick={applyCustomTime}>
-                  Set time
-                </RippleButton>
-              </div>
-            </div>
-          </section>
-
-          <section className="settings-group">
-            <div className="settings-group__heading">
-              <span>02</span>
-              <div>
-                <h3>Wallpaper display</h3>
-                <p>Keep only the information you want on screen.</p>
-              </div>
-            </div>
-            <SettingSwitch
-              label="Paris time"
-              detail="Show the current time in France"
-              checked={settings.showParisTime}
-              onChange={(checked) => patchSettings({ showParisTime: checked })}
-            />
-            <SettingSwitch
-              label="Your local time"
-              detail="Show the time where you are"
-              checked={settings.showLocalTime}
-              onChange={(checked) => patchSettings({ showLocalTime: checked })}
-            />
-            <SettingSwitch
-              label="Date"
-              detail="Show the current date in Paris"
-              checked={settings.showDate}
-              onChange={(checked) => patchSettings({ showDate: checked })}
-            />
-            <SettingSwitch
-              label="Greeting"
-              detail="Show Bonjour, Bonsoir, or Bonne Nuit"
-              checked={settings.showGreeting}
-              onChange={(checked) => patchSettings({ showGreeting: checked })}
-            />
-          </section>
-
-          <section className="settings-group">
-            <div className="settings-group__heading">
-              <span>03</span>
-              <div>
-                <h3>Atmosphere</h3>
-                <p>Preview weather and seasonal art without a weather API.</p>
-              </div>
-            </div>
-            <p className="settings-field-label">Weather</p>
-            <div className="atmosphere-option-grid atmosphere-option-grid--weather" role="radiogroup" aria-label="Weather effect">
-              {WEATHER_MODES.map((mode) => (
-                <label className="atmosphere-option" key={mode.value}>
-                  <input
-                    type="radio"
-                    name="weather-mode"
-                    value={mode.value}
-                    checked={settings.weatherMode === mode.value}
-                    onChange={() => patchSettings({ weatherMode: mode.value })}
-                  />
-                  <span>{mode.label}</span>
-                </label>
-              ))}
-            </div>
-
-            <p className="settings-field-label">Season</p>
-            <div className="atmosphere-option-grid atmosphere-option-grid--season" role="radiogroup" aria-label="Season">
-              {SEASON_MODES.map((mode) => (
-                <label className="atmosphere-option" key={mode.value}>
-                  <input
-                    type="radio"
-                    name="season-mode"
-                    value={mode.value}
-                    checked={settings.seasonMode === mode.value}
-                    onChange={() => patchSettings({ seasonMode: mode.value })}
-                  />
-                  <span>{mode.label}</span>
-                </label>
-              ))}
-            </div>
-            <p className="settings-field-label">Cloud coverage</p>
-            <ChoiceGrid name="cloud-coverage" value={settings.cloudCoverage} options={CLOUD_COVERAGE} onChange={(cloudCoverage) => patchSettings({ cloudCoverage })} />
-            <p className="settings-field-label">Lightning frequency</p>
-            <ChoiceGrid name="lightning-level" value={settings.lightningLevel} options={LIGHTNING_LEVELS} onChange={(lightningLevel) => patchSettings({ lightningLevel })} />
-          </section>
-
-          <section className="settings-group">
-            <div className="settings-group__heading">
-              <span>04</span>
-              <div>
-                <h3>Experience</h3>
-                <p>Fine-tune information and ambient animation.</p>
-              </div>
-            </div>
-            <SettingSwitch
-              label="24-hour clock"
-              detail="Use 20:31 instead of 8:31 PM"
-              checked={settings.use24Hour}
-              onChange={(checked) => patchSettings({ use24Hour: checked })}
-            />
-            <SettingSwitch
-              label="Ambient motion"
-              detail="Cloud drift, weather, particles, and aurora text"
-              checked={settings.ambientMotion}
-              onChange={(checked) => patchSettings({ ambientMotion: checked })}
-            />
-            <SettingSwitch
-              label="Aircraft flybys"
-              detail="A distant aircraft crosses the sky every few minutes"
-              checked={settings.showAircraft}
-              onChange={(checked) => patchSettings({ showAircraft: checked })}
-            />
-            <p className="settings-field-label">Aircraft density</p>
-            <ChoiceGrid name="aircraft-density" value={settings.aircraftDensity} options={AIRCRAFT_DENSITY} onChange={(aircraftDensity) => patchSettings({ aircraftDensity })} />
-            <SettingSwitch label="Airliners" detail="A220, A320, 737, and CRJ700" checked={settings.showAirliners} onChange={(checked) => patchSettings({ showAirliners: checked })} />
-            <SettingSwitch label="Business jets" detail="Falcon 8X and Cirrus Vision Jet" checked={settings.showBusinessJets} onChange={(checked) => patchSettings({ showBusinessJets: checked })} />
-            <SettingSwitch label="General aviation" detail="Cessna, Piper, and Diamond aircraft" checked={settings.showGeneralAviation} onChange={(checked) => patchSettings({ showGeneralAviation: checked })} />
-            <SettingSwitch label="Helicopters" detail="Airbus H135 traffic" checked={settings.showHelicopters} onChange={(checked) => patchSettings({ showHelicopters: checked })} />
-          </section>
-
-          <section className="settings-group settings-group--danger">
-            <div className="settings-group__heading">
-              <span>05</span>
-              <div><h3>Fictional destruction mode</h3><p>Cinematic visual sequence only. No real-world simulation data.</p></div>
-            </div>
-            {destructionActive ? (
-              <RippleButton className="settings-reset destruction-control" onClick={() => { onResetDestruction(); setDestructionArmed(false) }}>Reset and rebuild Paris</RippleButton>
-            ) : destructionArmed ? (
-              <div className="destruction-confirm">
-                <p>This begins the warning, blast, aftermath, and reconstruction sequence.</p>
-                <RippleButton className="settings-action destruction-control destruction-control--confirm" onClick={() => { onStartDestruction(); setDestructionArmed(false); onClose() }}>Confirm fictional sequence</RippleButton>
-                <button className="destruction-cancel" onClick={() => setDestructionArmed(false)}>Cancel</button>
-              </div>
-            ) : (
-              <RippleButton className="settings-reset destruction-control" onClick={() => setDestructionArmed(true)}>Arm “Nuke Paris”</RippleButton>
+              </label>
             )}
-          </section>
+            <Toggle
+              label="Ambient motion"
+              checked={settings.ambientMotion}
+              onChange={(value) => update('ambientMotion', value)}
+            />
+          </Group>
+
+          <Group
+            title="Sky and light"
+            note="Sun position is computed from the real ephemeris for Paris. In a 33 degree frame that puts it out of shot for most of the day, so framed mode remaps the arc to keep it visible."
+          >
+            <Choice<SunTracking>
+              label="Sun tracking"
+              value={settings.sunTracking}
+              options={[
+                ['framed', 'Framed, always in shot'],
+                ['realistic', 'Realistic, true azimuth'],
+              ]}
+              onChange={(value) => update('sunTracking', value)}
+            />
+            <Slider
+              label="Light pollution"
+              value={settings.lightPollution}
+              min={0}
+              max={1}
+              step={0.05}
+              format={(value) => (value > 0.7 ? 'city centre' : value > 0.35 ? 'suburban' : 'dark sky')}
+              onChange={(value) => update('lightPollution', value)}
+            />
+            <Slider
+              label="Relight strength"
+              value={settings.gradeAmount}
+              min={0}
+              max={1.4}
+              step={0.05}
+              format={(value) => `${Math.round(value * 100)}%`}
+              onChange={(value) => update('gradeAmount', value)}
+            />
+            <Toggle
+              label="Stars"
+              checked={settings.showStars}
+              onChange={(value) => update('showStars', value)}
+            />
+          </Group>
+
+          <Group title="Weather and season">
+            <Choice<WeatherMode>
+              label="Weather"
+              value={settings.weatherMode}
+              options={[
+                ['clear', 'Clear'],
+                ['fair', 'Fair weather cumulus'],
+                ['overcast', 'Overcast'],
+                ['rain', 'Rain'],
+                ['storm', 'Thunderstorm'],
+                ['snow', 'Snow'],
+              ]}
+              onChange={(value) => update('weatherMode', value)}
+            />
+            <Choice<CloudCoverage>
+              label="Coverage"
+              value={settings.cloudCoverage}
+              options={[
+                ['clear', 'Sky clear'],
+                ['few', 'Few, 1 to 2 oktas'],
+                ['scattered', 'Scattered, 3 to 4'],
+                ['broken', 'Broken, 5 to 7'],
+                ['overcast', 'Overcast, 8'],
+              ]}
+              onChange={(value) => update('cloudCoverage', value)}
+            />
+            <Choice<LightningLevel>
+              label="Lightning"
+              value={settings.lightningLevel}
+              options={[
+                ['off', 'Off'],
+                ['low', 'Occasional'],
+                ['medium', 'Moderate'],
+                ['high', 'Frequent'],
+                ['severe', 'Severe'],
+              ]}
+              onChange={(value) => update('lightningLevel', value)}
+            />
+            <Choice<SeasonMode>
+              label="Season"
+              value={settings.seasonMode}
+              options={[
+                ['auto', 'Follow the date'],
+                ['spring', 'Spring'],
+                ['summer', 'Summer'],
+                ['autumn', 'Autumn'],
+                ['winter', 'Winter'],
+              ]}
+              onChange={(value) => update('seasonMode', value)}
+            />
+          </Group>
+
+          <Group
+            title="Air traffic"
+            note="Aircraft are sized from real dimensions and real distances, which makes them small. Scale above 100 per cent is a deliberate cheat."
+          >
+            <Toggle
+              label="Show aircraft"
+              checked={settings.showAircraft}
+              onChange={(value) => update('showAircraft', value)}
+            />
+            <Choice<AircraftDensity>
+              label="Traffic density"
+              value={settings.aircraftDensity}
+              options={[
+                ['quiet', 'Quiet'],
+                ['low', 'Light'],
+                ['medium', 'Moderate'],
+                ['high', 'Busy'],
+              ]}
+              onChange={(value) => update('aircraftDensity', value)}
+            />
+            <Slider
+              label="Size cheat"
+              value={settings.aircraftScale}
+              min={1}
+              max={4}
+              step={0.1}
+              format={(value) => (value === 1 ? 'true scale' : `${value.toFixed(1)}x`)}
+              onChange={(value) => update('aircraftScale', value)}
+            />
+            <Toggle
+              label="Contrails"
+              checked={settings.showContrails}
+              onChange={(value) => update('showContrails', value)}
+            />
+            <Toggle
+              label="Airliners"
+              checked={settings.showAirliners}
+              onChange={(value) => update('showAirliners', value)}
+            />
+            <Toggle
+              label="Business jets"
+              checked={settings.showBusinessJets}
+              onChange={(value) => update('showBusinessJets', value)}
+            />
+            <Toggle
+              label="General aviation"
+              checked={settings.showGeneralAviation}
+              onChange={(value) => update('showGeneralAviation', value)}
+            />
+            <Toggle
+              label="Helicopters"
+              checked={settings.showHelicopters}
+              onChange={(value) => update('showHelicopters', value)}
+            />
+          </Group>
+
+          <Group title="Overlay">
+            <Toggle
+              label="Greeting"
+              checked={settings.showGreeting}
+              onChange={(value) => update('showGreeting', value)}
+            />
+            <Toggle
+              label="Paris time"
+              checked={settings.showParisTime}
+              onChange={(value) => update('showParisTime', value)}
+            />
+            <Toggle
+              label="Local time"
+              checked={settings.showLocalTime}
+              onChange={(value) => update('showLocalTime', value)}
+            />
+            <Toggle
+              label="Date"
+              checked={settings.showDate}
+              onChange={(value) => update('showDate', value)}
+            />
+            <Toggle
+              label="24 hour clock"
+              checked={settings.use24Hour}
+              onChange={(value) => update('use24Hour', value)}
+            />
+          </Group>
+
+          <Group
+            title="Cinematic sequence"
+            note="Fictional. Aircraft are grounded for the duration and the city is relit by the blast."
+          >
+            <div className="settings__actions">
+              <RippleButton
+                className="control-button"
+                onClick={onStartDestruction}
+                disabled={destructionActive}
+              >
+                Run sequence
+              </RippleButton>
+              <RippleButton className="control-button" onClick={onResetDestruction}>
+                Reset
+              </RippleButton>
+            </div>
+          </Group>
         </div>
 
-        <div className="settings-panel__footer">
-          <RippleButton className="settings-reset" onClick={onReset}>
-            Reset defaults
+        <footer className="settings__footer">
+          <RippleButton className="control-button" onClick={onReset}>
+            Restore defaults
           </RippleButton>
-          <span>Saved automatically</span>
-        </div>
-      </aside>
-    </>
-  )
-}
-
-type ChoiceGridProps<T extends string> = {
-  name: string
-  value: T
-  options: Array<{ value: T; label: string }>
-  onChange: (value: T) => void
-}
-
-function ChoiceGrid<T extends string>({ name, value, options, onChange }: ChoiceGridProps<T>) {
-  return <div className="atmosphere-option-grid atmosphere-option-grid--adaptive" role="radiogroup">
-    {options.map((option) => <label className="atmosphere-option" key={option.value}>
-      <input type="radio" name={name} value={option.value} checked={value === option.value} onChange={() => onChange(option.value)} />
-      <span>{option.label}</span>
-    </label>)}
-  </div>
-}
-
-type SettingSwitchProps = {
-  label: string
-  detail: string
-  checked: boolean
-  onChange: (checked: boolean) => void
-}
-
-function SettingSwitch({ label, detail, checked, onChange }: SettingSwitchProps) {
-  return (
-    <label className="setting-switch">
-      <span>
-        <strong>{label}</strong>
-        <small>{detail}</small>
-      </span>
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(event) => onChange(event.target.checked)}
-      />
-      <i aria-hidden="true" />
-    </label>
+        </footer>
+      </div>
+      <button className="settings__scrim" type="button" onClick={onClose} aria-label="Close settings" />
+    </div>
   )
 }
