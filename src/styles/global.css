@@ -1,0 +1,749 @@
+:root {
+  color: #fff9ee;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+.visually-hidden {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.wallpaper {
+  --accent: #ffd4a0;
+  --ground-back: #18263b;
+  --ground-front: #0a111f;
+  --haze: rgba(225, 238, 255, 0.16);
+  --ink: #fff9ee;
+  --sky-bottom: #4b6381;
+  --sky-middle: #283e5d;
+  --sky-top: #11172b;
+  --skyline-far: #26374e;
+  --skyline-near: #142337;
+  --star-opacity: 0;
+  --sun-color: rgba(255, 227, 179, 0.58);
+  --sun-x: 64%;
+  --sun-y: 42%;
+  --tower: #101724;
+  background: var(--sky-top);
+  color: var(--ink);
+  height: 100%;
+  isolation: isolate;
+  min-height: 32rem;
+  overflow: hidden;
+  position: relative;
+  transition: background-color 2.4s ease, color 2.4s ease;
+  width: 100%;
+}
+
+.wallpaper--dawn {
+  --accent: #ffe0c7;
+  --ground-back: #273349;
+  --ground-front: #10182a;
+  --haze: rgba(255, 214, 205, 0.22);
+  --sky-bottom: #e99f98;
+  --sky-middle: #777394;
+  --sky-top: #29354f;
+  --skyline-far: #4d5368;
+  --skyline-near: #252d42;
+  --star-opacity: 0.16;
+  --sun-color: rgba(255, 197, 160, 0.68);
+  --sun-x: 28%;
+  --sun-y: 66%;
+  --tower: #1a2234;
+}
+
+.wallpaper--day {
+  --accent: #fff1c8;
+  --ground-back: #4f5961;
+  --ground-front: #202a32;
+  --haze: rgba(255, 255, 255, 0.32);
+  --ink: #fffdf5;
+  --sky-bottom: #b9dded;
+  --sky-middle: #72b1d3;
+  --sky-top: #397fac;
+  --skyline-far: #718c96;
+  --skyline-near: #465b64;
+  --sun-color: rgba(255, 245, 204, 0.9);
+  --sun-x: 68%;
+  --sun-y: 24%;
+  --tower: #2b3033;
+}
+
+.wallpaper--golden {
+  --accent: #ffddb0;
+  --ground-back: #3d3742;
+  --ground-front: #191923;
+  --haze: rgba(255, 206, 166, 0.26);
+  --sky-bottom: #ec9273;
+  --sky-middle: #9e6272;
+  --sky-top: #313654;
+  --skyline-far: #554755;
+  --skyline-near: #292836;
+  --star-opacity: 0.06;
+  --sun-color: rgba(255, 181, 114, 0.84);
+  --sun-x: 72%;
+  --sun-y: 62%;
+  --tower: #171923;
+}
+
+.wallpaper--evening {
+  --accent: #e9c0d9;
+  --ground-back: #20263c;
+  --ground-front: #0d1120;
+  --haze: rgba(177, 180, 220, 0.17);
+  --sky-bottom: #69556e;
+  --sky-middle: #323957;
+  --sky-top: #17192d;
+  --skyline-far: #303247;
+  --skyline-near: #181c2b;
+  --star-opacity: 0.66;
+  --sun-color: rgba(207, 159, 185, 0.35);
+  --sun-x: 75%;
+  --sun-y: 66%;
+  --tower: #0b0e18;
+}
+
+.wallpaper--night {
+  --accent: #b9c5ec;
+  --ground-back: #111a2d;
+  --ground-front: #060b16;
+  --haze: rgba(133, 156, 198, 0.13);
+  --sky-bottom: #263551;
+  --sky-middle: #101b34;
+  --sky-top: #050a19;
+  --skyline-far: #18243a;
+  --skyline-near: #0d1628;
+  --star-opacity: 0.92;
+  --sun-color: rgba(160, 188, 231, 0.3);
+  --sun-x: 72%;
+  --sun-y: 25%;
+  --tower: #050912;
+}
+
+.scene,
+.scene__sky,
+.scene__grain {
+  inset: 0;
+  position: absolute;
+}
+
+.scene {
+  z-index: -1;
+}
+
+.scene__sky {
+  background:
+    linear-gradient(180deg, var(--sky-top) 0%, var(--sky-middle) 54%, var(--sky-bottom) 100%);
+  transition: background 2.4s ease;
+}
+
+.scene__sky::after {
+  background: linear-gradient(90deg, rgba(5, 8, 18, 0.27), transparent 42%, rgba(5, 8, 18, 0.1));
+  content: "";
+  inset: 0;
+  position: absolute;
+}
+
+.scene__glow {
+  background: radial-gradient(circle, var(--sun-color) 0%, transparent 66%);
+  border-radius: 50%;
+  filter: blur(2px);
+  height: min(50vw, 42rem);
+  left: var(--sun-x);
+  opacity: 0.82;
+  position: absolute;
+  top: var(--sun-y);
+  transform: translate(-50%, -50%);
+  transition: background 2.4s ease, left 2.4s ease, top 2.4s ease;
+  width: min(50vw, 42rem);
+}
+
+.scene__stars {
+  inset: 0 0 32%;
+  opacity: var(--star-opacity);
+  position: absolute;
+  transition: opacity 2.4s ease;
+}
+
+.scene__star {
+  animation: twinkle 4.6s ease-in-out infinite;
+  background: #fffdf0;
+  border-radius: 50%;
+  box-shadow: 0 0 5px rgba(222, 235, 255, 0.8);
+  position: absolute;
+}
+
+.scene__haze {
+  background: var(--haze);
+  border-radius: 50%;
+  filter: blur(44px);
+  height: 13%;
+  opacity: 0.8;
+  position: absolute;
+  transition: background 2.4s ease;
+  width: 55%;
+}
+
+.scene__haze--one {
+  animation: drift 22s ease-in-out infinite alternate;
+  bottom: 25%;
+  left: -8%;
+}
+
+.scene__haze--two {
+  animation: drift 28s ease-in-out -8s infinite alternate-reverse;
+  bottom: 33%;
+  right: -12%;
+}
+
+.scene__skyline {
+  bottom: 13%;
+  left: 0;
+  position: absolute;
+  transition: fill 2.4s ease, opacity 2.4s ease;
+  width: 100%;
+}
+
+.scene__skyline--far {
+  fill: var(--skyline-far);
+  height: 26%;
+  opacity: 0.69;
+}
+
+.scene__skyline--near {
+  bottom: 7%;
+  fill: var(--skyline-near);
+  height: 27%;
+  opacity: 0.96;
+}
+
+.scene__roofline {
+  fill: none;
+  opacity: 0.35;
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+.scene__tower {
+  bottom: 3.5%;
+  filter: drop-shadow(0 16px 25px rgba(0, 0, 0, 0.3));
+  height: min(87vh, 62vw);
+  max-width: 44vw;
+  position: absolute;
+  right: clamp(3%, 9vw, 13%);
+  transform-origin: bottom center;
+  transition: filter 2.4s ease;
+  width: auto;
+}
+
+.scene__tower-fill,
+.scene__tower-decks {
+  fill: var(--tower);
+  transition: fill 2.4s ease;
+}
+
+.scene__tower-cutouts {
+  fill: var(--skyline-near);
+  transition: fill 2.4s ease;
+}
+
+.scene__tower-lines {
+  fill: none;
+  opacity: 0.68;
+  stroke: var(--skyline-near);
+  stroke-linejoin: round;
+  stroke-width: 11;
+  transition: stroke 2.4s ease;
+}
+
+.scene__ground {
+  bottom: 0;
+  left: -5%;
+  position: absolute;
+  transition: background 2.4s ease;
+  width: 110%;
+}
+
+.scene__ground--back {
+  background: var(--ground-back);
+  border-radius: 56% 45% 0 0 / 90% 70% 0 0;
+  height: 17%;
+  transform: rotate(-1.2deg);
+}
+
+.scene__ground--front {
+  background: var(--ground-front);
+  border-radius: 52% 52% 0 0 / 65% 58% 0 0;
+  bottom: -4%;
+  height: 15%;
+  transform: rotate(1.1deg);
+}
+
+.scene__grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.32'/%3E%3C/svg%3E");
+  mix-blend-mode: soft-light;
+  opacity: 0.14;
+  pointer-events: none;
+}
+
+.wallpaper__masthead {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  left: clamp(1.5rem, 4vw, 4.75rem);
+  position: absolute;
+  right: clamp(1.5rem, 4vw, 4.75rem);
+  top: clamp(1.5rem, 5vh, 3.75rem);
+}
+
+.eyebrow,
+.edition,
+.version,
+.greeting__caption {
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.eyebrow {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.27em;
+}
+
+.edition {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.71rem;
+  font-style: italic;
+  letter-spacing: 0.08em;
+  margin-top: 0.55rem;
+  opacity: 0.6;
+  text-transform: none;
+}
+
+.version {
+  border-top: 1px solid currentColor;
+  font-size: 0.62rem;
+  letter-spacing: 0.21em;
+  opacity: 0.67;
+  padding-top: 0.55rem;
+}
+
+.wallpaper__greeting {
+  left: clamp(1.5rem, 8vw, 9rem);
+  max-width: min(42rem, 48vw);
+  position: absolute;
+  top: 36%;
+  transform: translateY(-50%);
+}
+
+.greeting__salutation,
+.greeting__name {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  letter-spacing: -0.045em;
+  line-height: 0.86;
+  margin: 0;
+}
+
+.greeting__salutation {
+  font-size: clamp(2.8rem, 6.4vw, 6.7rem);
+  text-shadow: 0 3px 24px rgba(7, 11, 24, 0.2);
+}
+
+.greeting__name {
+  font-size: clamp(4.3rem, 9.4vw, 10rem);
+  margin-left: clamp(0.6rem, 4vw, 4.5rem);
+  margin-top: 0.12em;
+}
+
+.greeting__caption {
+  border-left: 1px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  font-size: clamp(0.58rem, 0.76vw, 0.72rem);
+  letter-spacing: 0.22em;
+  margin: 1.8rem 0 0 clamp(0.7rem, 4.4vw, 5rem);
+  opacity: 0.72;
+  padding: 0.2rem 0 0.2rem 1rem;
+}
+
+.aurora-text {
+  display: inline-grid;
+  filter: drop-shadow(0 8px 20px rgba(10, 15, 31, 0.2));
+  position: relative;
+}
+
+.aurora-text__visual {
+  animation: aurora var(--aurora-speed) ease-in-out infinite;
+  background: linear-gradient(120deg, var(--aurora-colors));
+  background-clip: text;
+  background-size: 300% 300%;
+  color: transparent;
+  display: inline-block;
+  transform-origin: center;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.wallpaper__footer {
+  align-items: flex-end;
+  bottom: clamp(1.4rem, 4vh, 3.5rem);
+  display: flex;
+  justify-content: space-between;
+  left: clamp(1.5rem, 4vw, 4.75rem);
+  position: absolute;
+  right: clamp(1.5rem, 4vw, 4.75rem);
+}
+
+.clock-panel {
+  align-items: stretch;
+  display: flex;
+  filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.16));
+  gap: clamp(1.1rem, 2.2vw, 2.2rem);
+}
+
+.clock-panel__item {
+  display: grid;
+  gap: 0.22rem;
+  min-width: 5.7rem;
+}
+
+.clock-panel__city {
+  font-size: 0.57rem;
+  font-weight: 700;
+  letter-spacing: 0.27em;
+  opacity: 0.66;
+  text-transform: uppercase;
+}
+
+.clock-panel__time {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.55rem, 2.6vw, 2.55rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.clock-panel__rule {
+  background: currentColor;
+  opacity: 0.3;
+  width: 1px;
+}
+
+.fullscreen-control {
+  display: grid;
+  justify-items: end;
+}
+
+.fullscreen-control__status {
+  font-size: 0.7rem;
+  margin: 0.55rem 0 0;
+  max-width: 20rem;
+  min-height: 1em;
+  opacity: 0.72;
+  text-align: right;
+}
+
+.ripple-button {
+  cursor: pointer;
+  isolation: isolate;
+  overflow: hidden;
+  position: relative;
+}
+
+.ripple-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.ripple-button__label {
+  align-items: center;
+  display: flex;
+  gap: 0.7rem;
+  position: relative;
+  z-index: 2;
+}
+
+.ripple-button__canvas {
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  z-index: 1;
+}
+
+.ripple-button__wave {
+  animation: rippling var(--ripple-duration) ease-out forwards;
+  background: var(--ripple-color);
+  border-radius: 50%;
+  position: absolute;
+  transform: scale(0);
+}
+
+.fullscreen-button {
+  backdrop-filter: blur(12px);
+  background: rgba(9, 15, 28, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 999px;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  opacity: 0.7;
+  padding: 0.83rem 1.15rem;
+  text-transform: uppercase;
+  transition: background-color 180ms ease, border-color 180ms ease, opacity 180ms ease, transform 180ms ease;
+}
+
+.fullscreen-button:hover {
+  background: rgba(9, 15, 28, 0.36);
+  border-color: rgba(255, 255, 255, 0.65);
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+.fullscreen-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  opacity: 1;
+}
+
+.fullscreen-button__icon {
+  font-size: 0.9rem;
+  line-height: 0;
+}
+
+@keyframes aurora {
+  0% {
+    background-position: 0% 50%;
+    transform: rotate(-2deg) scale(0.98);
+  }
+  25% {
+    background-position: 50% 100%;
+    transform: rotate(1.5deg) scale(1.025);
+  }
+  50% {
+    background-position: 100% 50%;
+    transform: rotate(-1deg) scale(0.99);
+  }
+  75% {
+    background-position: 50% 0%;
+    transform: rotate(1deg) scale(1.015);
+  }
+  100% {
+    background-position: 0% 50%;
+    transform: rotate(-2deg) scale(0.98);
+  }
+}
+
+@keyframes rippling {
+  0% {
+    opacity: 1;
+    transform: scale(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2);
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.28;
+    transform: scale(0.75);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(-3%, 0, 0) scale(0.92);
+  }
+  to {
+    transform: translate3d(11%, -12%, 0) scale(1.08);
+  }
+}
+
+@media (max-width: 760px) {
+  .wallpaper {
+    min-height: 28rem;
+  }
+
+  .wallpaper__masthead {
+    top: 1.35rem;
+  }
+
+  .edition {
+    display: none;
+  }
+
+  .wallpaper__greeting {
+    left: 1.5rem;
+    max-width: calc(100% - 3rem);
+    top: 27%;
+  }
+
+  .greeting__salutation {
+    font-size: clamp(2.6rem, 12vw, 4rem);
+  }
+
+  .greeting__name {
+    font-size: clamp(4rem, 20vw, 6.4rem);
+    margin-left: 0.35rem;
+  }
+
+  .greeting__caption {
+    font-size: 0.56rem;
+    margin-left: 0.5rem;
+    margin-top: 1.2rem;
+  }
+
+  .scene__tower {
+    bottom: 7%;
+    height: min(64vh, 125vw);
+    max-width: 76vw;
+    right: -7%;
+  }
+
+  .scene__skyline--far {
+    bottom: 15%;
+    height: 20%;
+    width: 160%;
+  }
+
+  .scene__skyline--near {
+    bottom: 10%;
+    height: 21%;
+    width: 155%;
+  }
+
+  .scene__ground--back {
+    height: 18%;
+  }
+
+  .scene__ground--front {
+    height: 16%;
+  }
+
+  .wallpaper__footer {
+    align-items: flex-end;
+    bottom: 1.3rem;
+  }
+
+  .clock-panel {
+    gap: 0.8rem;
+  }
+
+  .clock-panel__item {
+    min-width: 4.4rem;
+  }
+
+  .clock-panel__time {
+    font-size: 1.35rem;
+  }
+
+  .fullscreen-button {
+    height: 2.8rem;
+    padding: 0;
+    width: 2.8rem;
+  }
+
+  .fullscreen-button .ripple-button__label {
+    font-size: 0;
+    justify-content: center;
+  }
+
+  .fullscreen-button__icon {
+    font-size: 1rem;
+  }
+
+  .fullscreen-control__status {
+    background: rgba(8, 12, 23, 0.46);
+    border-radius: 0.35rem;
+    bottom: 3.4rem;
+    font-size: 0.62rem;
+    padding: 0.25rem 0.4rem;
+    position: absolute;
+    right: 0;
+  }
+}
+
+@media (max-height: 570px) and (orientation: landscape) {
+  .wallpaper__greeting {
+    top: 38%;
+  }
+
+  .greeting__salutation {
+    font-size: clamp(2rem, 7vw, 3.8rem);
+  }
+
+  .greeting__name {
+    font-size: clamp(3rem, 10vw, 5.6rem);
+  }
+
+  .greeting__caption,
+  .edition {
+    display: none;
+  }
+
+  .scene__tower {
+    height: 92vh;
+    right: 9%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .aurora-text__visual,
+  .scene__haze,
+  .scene__star {
+    animation: none !important;
+  }
+
+  .aurora-text__visual {
+    background-position: 50% 50%;
+    transform: none;
+  }
+
+  .ripple-button__wave {
+    animation-duration: 1ms;
+  }
+}
+
