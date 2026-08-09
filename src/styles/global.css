@@ -747,3 +747,582 @@ button {
   }
 }
 
+/* v0.1 — illustrated Paris plates and wallpaper controls */
+
+.scene {
+  --night-opacity: 0;
+  --scene-tint: linear-gradient(90deg, rgba(10, 17, 39, 0.34), transparent 48%);
+  background: #172541;
+}
+
+.scene--dawn {
+  --night-opacity: 0.2;
+  --scene-tint: linear-gradient(90deg, rgba(52, 46, 88, 0.28), rgba(244, 172, 150, 0.07));
+}
+
+.scene--day {
+  --night-opacity: 0;
+  --scene-tint: linear-gradient(90deg, rgba(19, 43, 78, 0.24), transparent 52%);
+}
+
+.scene--golden {
+  --night-opacity: 0.06;
+  --scene-tint: linear-gradient(90deg, rgba(25, 25, 55, 0.34), rgba(218, 127, 91, 0.02));
+}
+
+.scene--evening {
+  --night-opacity: 0.62;
+  --scene-tint: linear-gradient(90deg, rgba(8, 16, 39, 0.48), transparent 56%);
+}
+
+.scene--night {
+  --night-opacity: 1;
+  --scene-tint: linear-gradient(90deg, rgba(2, 8, 24, 0.48), rgba(2, 8, 24, 0.05));
+}
+
+.scene__artwork,
+.scene__time-tint {
+  inset: 0;
+  position: absolute;
+}
+
+.scene__artwork {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  transform: scale(1.015);
+  transition: filter 2.4s ease, opacity 2.4s ease;
+}
+
+.scene__artwork--day {
+  background-image: url('/assets/paris-master.webp');
+}
+
+.scene--dawn .scene__artwork--day {
+  filter: brightness(0.82) saturate(0.76) hue-rotate(-7deg);
+}
+
+.scene--day .scene__artwork--day {
+  filter: brightness(1.08) saturate(0.86) contrast(0.96);
+}
+
+.scene--golden .scene__artwork--day {
+  filter: brightness(1.01) saturate(1.02);
+}
+
+.scene--evening .scene__artwork--day {
+  filter: brightness(0.72) saturate(0.86) hue-rotate(5deg);
+}
+
+.scene__artwork--night {
+  background-image: url('/assets/paris-night.webp');
+  opacity: var(--night-opacity);
+}
+
+.scene__time-tint {
+  background: var(--scene-tint);
+  transition: background 2.4s ease;
+  z-index: 1;
+}
+
+.scene::after {
+  background:
+    linear-gradient(180deg, rgba(3, 8, 20, 0.08), transparent 48%, rgba(3, 8, 20, 0.22)),
+    radial-gradient(circle at 65% 44%, transparent 35%, rgba(2, 6, 18, 0.18) 100%);
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 4;
+}
+
+.scene__stars,
+.scene__haze {
+  z-index: 2;
+}
+
+.scene__grain {
+  z-index: 3;
+}
+
+.scene--still .scene__star,
+.scene--still .scene__haze {
+  animation: none;
+}
+
+.masthead-actions {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.settings-launcher {
+  align-items: center;
+  backdrop-filter: blur(12px);
+  background: rgba(12, 19, 44, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  display: flex;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  opacity: 0.78;
+  padding: 0.72rem 1rem;
+  text-transform: uppercase;
+  transition: background-color 180ms ease, opacity 180ms ease, transform 180ms ease;
+}
+
+.settings-launcher:hover,
+.settings-launcher:focus-visible {
+  background: rgba(24, 31, 70, 0.52);
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+.settings-launcher:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.wallpaper__greeting {
+  top: 35%;
+}
+
+.greeting__salutation,
+.greeting__name {
+  font-family: "Arial Narrow", "Bahnschrift Condensed", "Helvetica Neue", Arial, sans-serif;
+  font-stretch: condensed;
+  font-weight: 800;
+  letter-spacing: -0.055em;
+  text-transform: uppercase;
+}
+
+.greeting__salutation {
+  font-size: clamp(2.4rem, 5.4vw, 5.9rem);
+  line-height: 0.88;
+}
+
+.greeting__name {
+  font-size: clamp(4.7rem, 10vw, 11rem);
+  line-height: 0.78;
+  margin-left: 0;
+  margin-top: 0.17em;
+}
+
+.greeting__caption {
+  border-left: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.54);
+  font-weight: 700;
+  margin-left: 0.2rem;
+  max-width: max-content;
+  padding: 0.72rem 0 0;
+}
+
+.clock-panel {
+  align-items: stretch;
+}
+
+.clock-panel__item--date {
+  max-width: 12rem;
+  min-width: 10rem;
+}
+
+.clock-panel__date {
+  font-family: "Arial Narrow", "Bahnschrift Condensed", "Helvetica Neue", Arial, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.settings-backdrop {
+  background: rgba(2, 5, 17, 0.38);
+  border: 0;
+  cursor: default;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  position: fixed;
+  transition: opacity 320ms ease;
+  z-index: 20;
+}
+
+.settings-backdrop--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.settings-panel {
+  background:
+    linear-gradient(145deg, rgba(56, 62, 118, 0.96), rgba(22, 27, 65, 0.97)),
+    radial-gradient(circle at top right, rgba(224, 167, 191, 0.22), transparent 40%);
+  border-left: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: -24px 0 80px rgba(2, 5, 18, 0.36);
+  color: #f9f5f1;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  height: 100%;
+  max-width: 100%;
+  padding: clamp(1.4rem, 3vw, 2.7rem);
+  position: fixed;
+  right: 0;
+  top: 0;
+  transform: translateX(102%);
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  width: min(34rem, 100vw);
+  z-index: 21;
+}
+
+.settings-panel--open {
+  transform: translateX(0);
+}
+
+.settings-panel__topline {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+}
+
+.settings-panel__coordinates,
+.settings-panel__kicker {
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.settings-panel__coordinates {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.28em;
+}
+
+.settings-panel__kicker {
+  font-size: 0.55rem;
+  letter-spacing: 0.22em;
+  margin-top: 0.48rem;
+  opacity: 0.58;
+}
+
+.settings-panel__close {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 50%;
+  display: flex;
+  font-size: 1.45rem;
+  height: 2.55rem;
+  justify-content: center;
+  line-height: 1;
+  width: 2.55rem;
+}
+
+.settings-panel h2 {
+  font-family: "Arial Narrow", "Bahnschrift Condensed", "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(4rem, 8vw, 6.5rem);
+  font-stretch: condensed;
+  letter-spacing: -0.07em;
+  line-height: 0.8;
+  margin: 2.1rem 0 2rem;
+  text-transform: uppercase;
+}
+
+.settings-panel__scroll {
+  overflow: auto;
+  padding-right: 0.45rem;
+  scrollbar-color: rgba(255, 255, 255, 0.34) transparent;
+  scrollbar-width: thin;
+}
+
+.settings-group {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 1.45rem 0 1.7rem;
+}
+
+.settings-group__heading {
+  align-items: flex-start;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1.5rem 1fr;
+  margin-bottom: 1.2rem;
+}
+
+.settings-group__heading > span {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  opacity: 0.48;
+  padding-top: 0.24rem;
+}
+
+.settings-group h3,
+.settings-group p {
+  margin: 0;
+}
+
+.settings-group h3 {
+  font-family: "Arial Narrow", "Bahnschrift Condensed", "Helvetica Neue", Arial, sans-serif;
+  font-size: 1rem;
+  font-stretch: condensed;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.settings-group p {
+  font-size: 0.7rem;
+  line-height: 1.45;
+  margin-top: 0.3rem;
+  opacity: 0.58;
+}
+
+.time-mode-grid {
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.time-mode {
+  cursor: pointer;
+  position: relative;
+}
+
+.time-mode input {
+  opacity: 0;
+  position: absolute;
+}
+
+.time-mode__copy {
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  display: grid;
+  min-height: 4.6rem;
+  padding: 0.9rem 0.72rem;
+  transition: background-color 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.time-mode input:checked + .time-mode__copy {
+  background: rgba(235, 185, 204, 0.18);
+  border-color: rgba(255, 225, 234, 0.64);
+  transform: translateY(-2px);
+}
+
+.time-mode input:focus-visible + .time-mode__copy {
+  outline: 2px solid #f8d7e2;
+  outline-offset: 3px;
+}
+
+.time-mode strong,
+.setting-switch strong {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.time-mode small,
+.setting-switch small {
+  font-size: 0.59rem;
+  line-height: 1.35;
+  margin-top: 0.34rem;
+  opacity: 0.52;
+}
+
+.custom-time {
+  background: rgba(5, 10, 32, 0.18);
+  border-left: 2px solid rgba(255, 255, 255, 0.22);
+  margin-top: 0.75rem;
+  opacity: 0.68;
+  padding: 0.9rem;
+  transition: border-color 180ms ease, opacity 180ms ease;
+}
+
+.custom-time--active {
+  border-color: #f2bccf;
+  opacity: 1;
+}
+
+.custom-time > label {
+  display: block;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  margin-bottom: 0.65rem;
+  text-transform: uppercase;
+}
+
+.custom-time__controls {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: 1fr auto;
+}
+
+.custom-time input {
+  background: rgba(7, 12, 37, 0.48);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 0;
+  color: #fff;
+  min-width: 0;
+  padding: 0.7rem 0.8rem;
+  color-scheme: dark;
+}
+
+.settings-action,
+.settings-reset {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  padding: 0.72rem 0.9rem;
+  text-transform: uppercase;
+}
+
+.setting-switch {
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr auto;
+  min-height: 4rem;
+  padding: 0.62rem 0;
+  position: relative;
+}
+
+.setting-switch > span {
+  display: grid;
+}
+
+.setting-switch input {
+  height: 1px;
+  opacity: 0;
+  position: absolute;
+  width: 1px;
+}
+
+.setting-switch i {
+  background: rgba(5, 9, 29, 0.44);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  height: 1.45rem;
+  position: relative;
+  transition: background-color 180ms ease, border-color 180ms ease;
+  width: 2.65rem;
+}
+
+.setting-switch i::after {
+  background: #e8e7ef;
+  border-radius: 50%;
+  content: "";
+  height: 1rem;
+  left: 0.17rem;
+  position: absolute;
+  top: 0.17rem;
+  transition: transform 180ms ease;
+  width: 1rem;
+}
+
+.setting-switch input:checked + i {
+  background: rgba(238, 171, 198, 0.58);
+  border-color: #f5ccdc;
+}
+
+.setting-switch input:checked + i::after {
+  transform: translateX(1.18rem);
+}
+
+.setting-switch input:focus-visible + i {
+  outline: 2px solid #f8d7e2;
+  outline-offset: 3px;
+}
+
+.settings-panel__footer {
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  display: flex;
+  justify-content: space-between;
+  padding-top: 1rem;
+}
+
+.settings-panel__footer > span {
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  opacity: 0.46;
+  text-transform: uppercase;
+}
+
+.wallpaper--still .aurora-text__visual,
+.wallpaper--still .scene__haze,
+.wallpaper--still .scene__star {
+  animation-play-state: paused;
+}
+
+@media (max-width: 760px) {
+  .scene__artwork--day {
+    background-image: url('/assets/paris-master-mobile.webp');
+  }
+
+  .scene__artwork--night {
+    background-image: url('/assets/paris-night-mobile.webp');
+  }
+
+  .scene__artwork {
+    background-position: center;
+    transform: scale(1.01);
+  }
+
+  .wallpaper__greeting {
+    top: 29%;
+  }
+
+  .greeting__salutation {
+    font-size: clamp(2.25rem, 10vw, 3.4rem);
+  }
+
+  .greeting__name {
+    font-size: clamp(4.2rem, 19vw, 6rem);
+  }
+
+  .settings-launcher {
+    border-radius: 50%;
+    height: 2.65rem;
+    padding: 0;
+    width: 2.65rem;
+  }
+
+  .settings-launcher .ripple-button__label {
+    font-size: 0;
+    justify-content: center;
+  }
+
+  .settings-launcher .ripple-button__label > span {
+    font-size: 1rem;
+  }
+
+  .clock-panel {
+    flex-wrap: wrap;
+    max-width: calc(100vw - 6.5rem);
+  }
+
+  .clock-panel__item--date {
+    flex-basis: 100%;
+    max-width: 14rem;
+    min-width: 0;
+  }
+
+  .clock-panel__rule--date {
+    display: none;
+  }
+
+  .clock-panel__date {
+    font-size: 0.64rem;
+  }
+
+  .settings-panel {
+    padding: 1.35rem;
+  }
+
+  .settings-panel h2 {
+    font-size: 4.25rem;
+    margin: 1.7rem 0 1.5rem;
+  }
+}
