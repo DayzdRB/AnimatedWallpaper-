@@ -1,0 +1,748 @@
+I am building a full-screen animated Paris wallpaper website. I want you to begin development of the project now.
+
+This is a rebuild of an earlier concept. The priority is NOT simply getting something visible quickly. The architecture must be designed correctly around a layered scene system so that time of day, weather, seasons, lighting, aircraft, and special effects can all interact naturally without destroying image quality.
+
+The visual target is a beautiful, slightly cartoonistic / painterly premium environment-art style. Think polished high-end game environment artwork: realistic enough to recognize Paris immediately, but with slightly softened and stylized shapes. Do NOT make it anime, heavily cartoonish, cel-shaded, or overly saturated.
+
+The reference artwork I provide establishes the art style and Paris composition. Do not blindly copy lighting or colors from unrelated style references.
+
+============================================================
+CORE DESIGN PRINCIPLE
+============================================================
+
+DO NOT build the Paris scene as one flattened image with aggressive CSS filters.
+
+The wallpaper must be composed from multiple independent layers.
+
+A full composite image may temporarily be used as a development/reference proxy, but the production architecture must assume separated assets.
+
+The renderer must allow:
+
+- time-of-day lighting changes
+- weather changes
+- season changes
+- dynamic cloud coverage
+- rain
+- snow
+- fog
+- storms
+- wet streets
+- city lights
+- monument lighting
+- aircraft flying through the scene
+- aircraft passing BEHIND the Arc de Triomphe and Eiffel Tower
+- future special events such as a nuclear explosion
+- smooth transitions between states
+
+Do not bake clouds, rain, snow, fog, or other weather permanently into the primary scenery artwork.
+
+============================================================
+PARIS COMPOSITION
+============================================================
+
+The primary Paris scene should use this composition:
+
+- Arc de Triomphe is a major foreground landmark near the center.
+- Eiffel Tower is a major independently isolated landmark on the right.
+- Parisian city buildings and boulevard occupy the midground/background.
+- There is substantial open sky.
+- Trees, boulevards, lamps, rooftops, and other Paris details should support the landmarks without overwhelming them.
+
+The Arc de Triomphe and Eiffel Tower MUST be independent renderable layers/occluders.
+
+This is important because aircraft must be capable of flying behind either landmark.
+
+Do not simply draw aircraft on top of the completed scene.
+
+============================================================
+NO VISIBLE SUN OR MOON
+============================================================
+
+Do not render a visible sun or moon.
+
+Pretend the sun/moon are behind the camera or otherwise outside the frame.
+
+Their existence should only affect:
+
+- ambient light
+- directional lighting
+- color temperature
+- shadows
+- sky appearance
+- environmental illumination
+
+This gives us more control over the composition.
+
+============================================================
+RENDER LAYER ARCHITECTURE
+============================================================
+
+Build a scene stack approximately like this:
+
+1. Sky base
+2. High/far clouds
+3. Horizon atmosphere / distant haze
+4. Distant skyline
+5. Aircraft far layer
+6. Midground Paris buildings
+7. Boulevard / ground plane
+8. Vegetation / seasonal scenery
+9. Eiffel Tower occlusion layer
+10. Aircraft near layer if needed
+11. Arc de Triomphe occlusion layer
+12. Street furniture / lamps
+13. Low fog / weather atmosphere
+14. Rain/snow/particle effects
+15. Special effects
+16. User interface
+
+The exact implementation can be adjusted if technically justified, but preserve proper scene depth.
+
+Use DOM layers, Canvas, WebGL, or a hybrid approach based on what is most appropriate. Do not prematurely introduce a giant rendering framework if normal React + Canvas/CSS can do the job cleanly.
+
+Performance matters. Avoid unnecessary re-renders.
+
+============================================================
+ASSET STRUCTURE
+============================================================
+
+Design around an asset structure similar to:
+
+/public/assets/paris/
+    /base/
+        sky
+        skyline-far
+        city-mid
+        ground
+        street-furniture
+        arc
+        eiffel
+
+    /masks/
+        arc-light-mask
+        eiffel-light-mask
+        city-light-mask
+        window-light-mask
+        streetlamp-mask
+        road-wetness-mask
+        snow-accumulation-mask
+        foliage-mask
+        haze-depth-mask
+
+    /weather/
+        clouds-high
+        clouds-mid
+        overcast
+        storm
+        fog
+        rain-haze
+        snow-haze
+
+    /seasonal/
+        spring
+        summer
+        autumn
+        winter
+        snow-accumulation
+
+    /fx/
+        aircraft
+        particles
+        nuke
+
+Do not require every asset to exist before development can start.
+
+Create graceful placeholders and a clear asset registry so I can replace assets later without rewriting renderer logic.
+
+============================================================
+LIGHTING SYSTEM
+============================================================
+
+This is extremely important.
+
+Do NOT recreate the previous mistake of putting multiple full-screen multiply/screen/soft-light overlays over the entire image until it looks like the user is viewing Paris through tinted glass.
+
+The artwork should retain clarity.
+
+Lighting should be subtle, layered, mask-aware, and derived from scene state.
+
+Create a central lighting/environment state such as:
+
+TimeOfDay:
+- dawn
+- morning
+- midday
+- goldenHour
+- dusk
+- night
+
+Season:
+- spring
+- summer
+- autumn
+- winter
+
+Weather:
+- clear
+- partlyCloudy
+- overcast
+- fog
+- rain
+- storm
+- snow
+
+Also support numerical values such as:
+
+- cloudCover: 0–1
+- precipitation: 0–1
+- visibility: 0–1
+- wind: 0–1
+- ambientIntensity: 0–1
+- lampIntensity: 0–1
+- monumentLightIntensity: 0–1
+- buildingLightIntensity: 0–1
+- wetness: 0–1
+- snowBrightness: 0–1
+- hazeOpacity: 0–1
+
+Derived lighting should come from time + season + weather rather than arbitrary component-level filters.
+
+Lighting should affect individual scene layers differently.
+
+Examples:
+
+Midday:
+- bright ambient lighting
+- high clarity
+- artificial lights nearly off
+
+Golden hour:
+- warmer stone/building highlights
+- richer contrast
+- warm but natural lighting
+
+Dusk:
+- decreasing ambient light
+- streetlights activate progressively
+- Eiffel/Arc illumination rises
+- city windows begin illuminating
+
+Night:
+- dark but still readable
+- city lighting, lamps, monuments and windows provide visual interest
+- sky should not simply become a black overlay
+- scenery should remain crisp
+
+Overcast:
+- softer shadows
+- reduced contrast
+- cooler/neutral ambient light
+
+Rain:
+- darker environment
+- road wetness/reflections
+- increased haze
+- lights bloom slightly
+
+Fog:
+- depth-based visibility reduction
+- distant city disappears before foreground landmarks
+- lamps become more diffuse
+
+Storm:
+- dramatic clouds
+- rain
+- reduced light
+- optional lightning illumination
+- lightning should temporarily illuminate appropriate layers rather than merely flashing the whole browser white
+
+============================================================
+SNOW / WINTER BEHAVIOR
+============================================================
+
+Snow must behave naturally.
+
+Do NOT use one bright white snow overlay during both day and night.
+
+Daytime snow:
+- relatively bright
+- reflects daylight
+- maintains surface detail
+- slightly cool/neutral
+
+Night snow:
+- substantially darker
+- unlit snow should be blue-gray / muted
+- snow near lamps and illuminated landmarks may become warmer/brighter
+- snowfall particles should also respond to scene illumination
+- do not make nighttime Paris look like the ground is self-illuminated
+
+Snow accumulation and active falling snow should be separate systems.
+
+Season and weather must also be separate:
+
+Winter does NOT automatically mean active snowfall.
+
+Winter can be:
+- clear
+- cloudy
+- rainy
+- foggy
+- snowing
+
+Likewise snow accumulation can persist independently of active precipitation.
+
+============================================================
+SEASON SYSTEM
+============================================================
+
+Seasonal variation should concentrate on things that physically change:
+
+Spring:
+- fresh green foliage
+- brighter vegetation
+- slightly softer atmosphere
+
+Summer:
+- full rich foliage
+- potentially warmer/hazier air
+
+Autumn:
+- amber/orange/red foliage
+- fallen leaves where appropriate
+- slightly warmer seasonal scenery
+
+Winter:
+- bare/sparse trees
+- muted vegetation
+- optional accumulated snow
+- cooler seasonal atmosphere
+
+Do not simply tint the entire screen orange for autumn or blue for winter.
+
+Use actual seasonal assets/masks when possible.
+
+Transitions between seasons should support smooth blending rather than abrupt hard cuts.
+
+============================================================
+CLOUD SYSTEM
+============================================================
+
+Redo clouds completely.
+
+Clouds must be independent layers.
+
+Support several families:
+
+- high wispy cirrus
+- fair-weather cumulus
+- broken cloud cover
+- overcast
+- low stratus
+- storm clouds
+
+Use multiple cloud layers with different:
+
+- speed
+- scale
+- opacity
+- direction
+- height/depth
+- parallax
+
+Cloud coverage should be controlled by weather state.
+
+Do not place permanent clouds into the foreground artwork.
+
+Most clouds should remain behind major foreground landmarks.
+
+Low fog/cloud layers can pass in front of distant scenery when appropriate.
+
+============================================================
+WEATHER PARTICLES
+============================================================
+
+Create scalable systems for:
+
+- rain
+- snow
+- fog/mist
+- optional drifting autumn leaves
+
+Particles should react to:
+
+- wind
+- intensity
+- scene lighting
+- depth
+
+Avoid cheesy screen-overlay effects.
+
+Weather should feel embedded in the environment.
+
+============================================================
+ROAD WETNESS
+============================================================
+
+Rain should affect the ground separately from the rest of the scene.
+
+Use a road/ground wetness mask.
+
+Increasing wetness should progressively introduce:
+
+- darker pavement
+- subtle reflections
+- lamp reflections at night
+- monument/city color reflections where reasonable
+
+Do not apply glossy reflections to sidewalks, buildings, trees, and everything else indiscriminately.
+
+============================================================
+AIRCRAFT SYSTEM
+============================================================
+
+Aircraft are an important ambient feature.
+
+Support aircraft crossing the Paris sky.
+
+Aircraft must be capable of:
+
+- flying behind the Arc de Triomphe
+- flying behind the Eiffel Tower
+- appearing at different scales/depths
+- moving smoothly
+- optionally showing navigation lights at night
+- being affected slightly by haze/fog
+
+The layer architecture must make occlusion real rather than fake.
+
+Create separate aircraft depth lanes if useful.
+
+============================================================
+NUCLEAR EXPLOSION / SPECIAL EVENT SYSTEM
+============================================================
+
+The old nuke implementation became broken.
+
+Rebuild special events as an independent subsystem.
+
+Do NOT tie the nuclear effect directly into normal weather rendering.
+
+The future nuke sequence should be architecturally capable of:
+
+1. initial flash
+2. temporary scene overexposure
+3. expanding fireball
+4. shockwave
+5. mushroom cloud
+6. environmental darkening
+7. smoke/fire aftermath
+8. damaged-state overlays if assets exist
+
+For this first development pass, the entire finished animation does not have to be photorealistically complete, but the event architecture and trigger should function correctly.
+
+Include a development/demo trigger in settings.
+
+============================================================
+TIME / PARIS CLOCK
+============================================================
+
+The wallpaper is Paris-based.
+
+Use Europe/Paris timezone.
+
+The displayed scene time should drive:
+
+- lighting
+- greeting
+- clock
+- appropriate environment state
+
+The greeting must be:
+
+05:00–17:59:
+Bonjour Trevor
+
+18:00–21:59:
+Bonsoir Trevor
+
+22:00–04:59:
+Bonne Nuit Trevor
+
+The greeting must respond to the TIME DISPLAYED BY THE WALLPAPER, not merely whatever local timezone the viewer's computer happens to use.
+
+If a development time override exists, the greeting and lighting must follow the overridden Paris time.
+
+============================================================
+UI DESIGN
+============================================================
+
+Restore the elegant minimal wallpaper interface.
+
+Do not allow the CSS to collapse into unformatted text again.
+
+The interface should feel premium, restrained, cinematic, and integrated with the wallpaper.
+
+Suggested layout:
+
+Top-left:
+PARIS / FRANCE
+ANIMATED STUDY NO. 01
+
+Main left area:
+small greeting:
+Bonjour / Bonsoir / Bonne Nuit
+
+large animated:
+Trevor
+
+small caption:
+LA VILLE LUMIÈRE · 48°51'N / 2°21'E
+
+Bottom-left:
+Paris time
+local time if useful
+Paris date
+
+Bottom-right:
+Settings
+Enter Fullscreen
+
+Keep controls subtle when idle.
+
+============================================================
+AURORA TEXT
+============================================================
+
+Use the AuroraText component for the large "Trevor" title.
+
+Use the implementation I provide.
+
+Important:
+The component renders an accessibility-only copy using `sr-only`.
+
+Make absolutely sure `sr-only` exists and works correctly.
+
+The old project lost this CSS and rendered:
+
+TrevorTrevor
+
+Do not repeat that regression.
+
+Use AuroraText sparingly. It is primarily for the Trevor title.
+
+Do not turn every label into glowing gradient text.
+
+============================================================
+RIPPLE BUTTON
+============================================================
+
+Use my supplied RippleButton component for buttons such as:
+
+- Settings
+- Fullscreen
+- demo controls
+- special-event controls
+
+Integrate it visually into the wallpaper design rather than leaving default chunky button styling.
+
+Keep the ripple interaction.
+
+============================================================
+SETTINGS / DEVELOPMENT PANEL
+============================================================
+
+Create a polished settings panel.
+
+For development, include manual overrides for:
+
+- displayed Paris time
+- season
+- weather
+- cloud coverage
+- precipitation
+- wind
+- visibility
+- wetness
+- snow accumulation
+- lighting / automatic mode
+- aircraft density
+- special event trigger
+
+Provide:
+
+AUTO
+
+as the default for systems that normally derive their state.
+
+This panel will let us test every visual state without waiting six months for winter.
+
+============================================================
+WEATHER DATA ARCHITECTURE
+============================================================
+
+Keep weather-data acquisition separate from weather rendering.
+
+Create a weather provider/interface.
+
+The renderer should consume normalized weather state and should not care whether weather came from:
+
+- live API data
+- static development data
+- manual settings
+- future provider
+
+If the existing project already contains a useful weather provider, preserve or adapt it rather than replacing it for no reason.
+
+Do not make the entire scene depend directly on an API call inside a component.
+
+============================================================
+RESPONSIVENESS
+============================================================
+
+Primary target:
+16:9 desktop wallpaper, including 1920x1080 and 3840x2160.
+
+Also behave sensibly on ultrawide displays.
+
+Avoid stretching landmark proportions.
+
+Use cover/crop strategies carefully.
+
+Preserve the Arc/Eiffel composition.
+
+The interface should reposition gracefully at smaller sizes.
+
+============================================================
+PERFORMANCE
+============================================================
+
+This is an animated wallpaper, so performance matters.
+
+Target smooth animation.
+
+Use:
+
+- requestAnimationFrame where appropriate
+- CSS transforms for simple movement
+- memoization where useful
+- canvas for large particle counts if needed
+- lazy asset loading
+- preloading of neighboring time/season assets
+- reduced-motion support
+- visibility handling when the browser tab is hidden
+
+Do not constantly cause React component re-renders for animation frames.
+
+Separate:
+application state
+from
+high-frequency render/animation state.
+
+============================================================
+PROJECT ARCHITECTURE
+============================================================
+
+Use TypeScript.
+
+Use clean, modular components/services.
+
+Suggested architecture:
+
+src/
+  components/
+    ui/
+    wallpaper/
+    settings/
+
+  scene/
+    SceneRenderer
+    SceneState
+    LightingEngine
+    WeatherEngine
+    SeasonEngine
+    AssetRegistry
+    layers/
+    fx/
+
+  hooks/
+
+  lib/
+
+  types/
+
+Avoid one giant Wallpaper.tsx containing 2,000 lines of unrelated logic.
+
+============================================================
+FIRST DEVELOPMENT MILESTONE
+============================================================
+
+Do NOT try to perfect every asset immediately.
+
+The first working milestone should prove the architecture.
+
+I want to be able to run the website and:
+
+- see the Paris scene
+- see properly formatted UI
+- see Bonjour/Bonsoir/Bonne Nuit Trevor based on displayed Paris time
+- open Settings
+- override time
+- switch seasons
+- switch weather
+- adjust cloud coverage
+- switch between day and night
+- see city/monument lighting react
+- enable rain
+- enable snow
+- verify nighttime snow is darker than daytime snow
+- enable fog
+- see clouds move
+- see an aircraft cross the scene
+- verify the aircraft passes behind the Arc and Eiffel Tower
+- activate a preliminary nuke/special-event test
+- enter fullscreen
+
+Use placeholders where final assets are not yet available, but design the code so they can be replaced with production assets easily.
+
+============================================================
+VERY IMPORTANT VISUAL RULES
+============================================================
+
+1. Never destroy scene clarity using giant opaque grading overlays.
+2. Never bake weather into a foreground landmark asset.
+3. Never bake clouds into the permanent scene artwork.
+4. Never make night simply "day image + black transparent rectangle."
+5. Never make snow equally bright at noon and midnight.
+6. Never globally tint the entire scene orange to create autumn.
+7. Never globally tint everything blue to create winter.
+8. Never render aircraft above foreground landmarks when they should pass behind them.
+9. Never tie special effects such as the nuke directly to normal weather code.
+10. Preserve crisp architectural detail.
+11. Prefer subtle state changes over exaggerated filters.
+12. Keep everything visually natural even though the art style is slightly stylized.
+
+============================================================
+IMPLEMENTATION PROCESS
+============================================================
+
+Before making large changes:
+
+1. Inspect the existing project if I provide it.
+2. Identify anything worth preserving from its architecture.
+3. Do not preserve broken visual implementations merely because they already exist.
+4. Establish the new scene/layer/state architecture.
+5. Build the first working milestone.
+6. Run/build/test it.
+7. Fix TypeScript/runtime/CSS errors.
+8. Give me a concise summary of:
+   - what was created
+   - important architectural decisions
+   - current placeholder assets
+   - what asset work should come next
+
+Do not stop at giving me sample code or describing what I should do.
+
+Actually implement the project.
+
+The goal is a technically sound foundation for an exceptionally polished animated Paris wallpaper, not another quick prototype that becomes impossible to improve later.
